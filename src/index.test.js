@@ -107,21 +107,21 @@ describe('filter', () => {
   });
 
   describe('data types', () => {
-    it('should handle numbers', () => {
+    it('should handle a number', () => {
       const filter = { NumberProp: 1 };
       const expected = "$filter=NumberProp eq 1"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-    it('should handle strings', () => {
+    it('should handle a string', () => {
       const filter = { StringProp: '2' };
       const expected = "$filter=StringProp eq '2'"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-    it('should handle dates', () => {
+    it('should handle a Date', () => {
       const filter = { DateProp: new Date(Date.UTC(2017, 2, 30, 7, 30)) };
       const expected = "$filter=DateProp eq 2017-03-30T07:30:00Z"
       const actual = buildQuery({ filter });
@@ -150,7 +150,6 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
-
   });
 })
 
