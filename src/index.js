@@ -62,6 +62,7 @@ export default function ({ select, filter, groupBy, orderBy, top, skip, count, e
 
 function buildFilter(filters = {}, propPrefix = '') {
   if (typeof(filters) === 'string') {
+    // Use raw filter string
     return filters;
   } else if (Array.isArray(filters)) {
     return filters.map(f => buildFilter(f, propPrefix)).join(' and ');
@@ -72,7 +73,7 @@ function buildFilter(filters = {}, propPrefix = '') {
 
       if (Array.isArray(value)) {
         result.push(`(${value.map(v => buildFilter(v, propPrefix)).join(` ${filterKey} `)})`)
-      } else if (typeof(value) === "number" || typeof(value) === "string" || value instanceof Date) {
+      } else if (["number", "string", "boolean"].includes(typeof(value)) || value instanceof Date) {
         // Simple key/value handled as equals operator
         result.push(`${propName} eq ${handleValue(value)}`) 
       } else if (value instanceof Object) {

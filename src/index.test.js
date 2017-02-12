@@ -121,6 +121,13 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
+    it('should handle a boolean', () => {
+      const filter = { BooleanProp: true };
+      const expected = "$filter=BooleanProp eq true"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
     it('should handle a Date', () => {
       const filter = { DateProp: new Date(Date.UTC(2017, 2, 30, 7, 30)) };
       const expected = "$filter=DateProp eq 2017-03-30T07:30:00Z"
