@@ -64,18 +64,53 @@ buildQuery({ filter })
 Supported operators: `and`, `or`
 
 #### Collection operators
+##### Implied `and`
+
+Using an object
 ```js
 const filter = {
   SomeCollection: {
-    any: [{
+    any: {
       SomeProp: 1,
       AnotherProp: 2
-    }]
+    }
   }
 };
     
 buildQuery({ filter })
-=> '$filter=SomeCollection/any(t:(t/SomeProp eq 1 and t/AnotherProp eq 2)'
+=> '$filter=SomeCollection/any(t:t/SomeProp eq 1 and t/AnotherProp eq 2)'
+```
+
+or also as an array of object
+```js
+const filter = {
+  SomeCollection: {
+    any: [
+      { SomeProp: 1 },
+      { AnotherProp: 2},
+    ]
+  }
+};
+    
+buildQuery({ filter })
+=> '$filter=SomeCollection/any(t:t/SomeProp eq 1 and t/AnotherProp eq 2)'
+```
+
+##### Specify logical operator (and, or)
+```js
+const filter = {
+  SomeCollection: {
+    any: {
+      or: [
+        { SomeProp: 1 },
+        { AnotherProp: 2},
+      ]
+    }
+  }
+};
+    
+buildQuery({ filter })
+=> '$filter=SomeCollection/any(t:(t/SomeProp eq 1 or t/AnotherProp eq 2)
 ```
 
 Supported operators: `any`, `all`

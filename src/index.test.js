@@ -74,7 +74,22 @@ describe('filter', () => {
   })
 
   describe('collection operators', () => {
-    it('should handle simple collection operators (all, any)', () => {
+
+    it('should handle collection operator with object as implied `and`', () => {
+      const filter = {
+        Tasks: {
+          any: {
+            AssignedGroupId: 1234,
+            StatusId: 300
+          }
+        }
+      }
+      const expected = "$filter=Tasks/any(t:t/AssignedGroupId eq 1234 and t/StatusId eq 300)"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle collection operator with array of 1 object as implied `and`', () => {
       const filter = {
         Tasks: {
           any: [
@@ -85,25 +100,42 @@ describe('filter', () => {
           ]
         }
       }
-      const expected = "$filter=Tasks/any(t:(t/AssignedGroupId eq 1234 and t/StatusId eq 300))"
+      const expected = "$filter=Tasks/any(t:t/AssignedGroupId eq 1234 and t/StatusId eq 300)"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-    // TODO: Fix
-    // it('should handle simple collection operators (all, any) with multiple filter objects', () => {
-    //   const filter = {
-    //     Tasks: {
-    //       any: [
-    //         { AssignedGroupId: 1234 },
-    //         { StatusId: 300 }
-    //       ]
-    //     }
-    //   }
-    //   const expected = "$filter=Tasks/any(t:(t/AssignedGroupId eq 1234 and t/StatusId eq 300))"
-    //   const actual = buildQuery({ filter });
-    //   expect(actual).toEqual(expected);
-    // });
+    it('should handle collection operator with array of objects as implied `and', () => {
+      const filter = {
+        Tasks: {
+          any: [
+            { AssignedGroupId: 1234 },
+            { StatusId: 300 }
+          ]
+        }
+      }
+      const expected = "$filter=Tasks/any(t:t/AssignedGroupId eq 1234 and t/StatusId eq 300)"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+
+
+    it('should handle collection operator with object definining operator', () => {
+      const filter = {
+        Tasks: {
+          any: {
+            or: [
+              { AssignedGroupId: 1234 },
+              { StatusId: 300 }
+            ]
+          }
+        }
+      }
+      const expected = "$filter=Tasks/any(t:(t/AssignedGroupId eq 1234 or t/StatusId eq 300))"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
   });
 
   describe('data types', () => {
