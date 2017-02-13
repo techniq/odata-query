@@ -46,7 +46,7 @@ Supported operators: `eq`, `ne`, `gt`, `ge`, `lt`, `le`, `in`
 
 #### Logical operators
 ```js
-// `and` implied by user an array
+// `and` implied by using an array
 const filter = [{ SomeProp: 1 }, { AnotherProp: 2 }, 'startswith(Name, "foo")'];
 
 // or you can be explicit
