@@ -110,7 +110,7 @@ const filter = {
 };
     
 buildQuery({ filter })
-=> '$filter=SomeCollection/any(t:(t/SomeProp eq 1 or t/AnotherProp eq 2)
+=> '$filter=SomeCollection/any(t:(t/SomeProp eq 1 or t/AnotherProp eq 2)'
 ```
 
 Supported operators: `any`, `all`
