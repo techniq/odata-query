@@ -18,6 +18,7 @@
   "dependencies": {},
   "scripts": {
     "test": "jest",
+    "test-watch": "jest --watch",
     "clean": "rimraf dist",
     "prebuild": "npm run clean -s",
     "build": "NODE_ENV=production babel src -d dist --ignore test.js",
