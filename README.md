@@ -157,19 +157,39 @@ buildQuery({ filter })
 ```
 
 ### Selecting
-Coming soon
+```js
+const select = ['Foo', 'Bar'];
+buildQuery({ select })
+=> '$select=Foo,Bar'
+```
 
 ### Ordering
-Coming soon
+```js
+const orderBy = ['Foo desc', 'Bar'];
+buildQuery({ orderBy })
+=> '$count=Foo desc,Bar'
+```
 
 ### Expanding
 Coming soon
 
 ### Pagination (skip and top)
-Coming soon
+#### Get page 3 (25 records per page)
+```js
+const page = 3;
+const perPage = 25;
+const top = perPage;
+const skip = perPage * (page - 1);
+buildQuery({ top, skip })
+=> '$top=25&$skip=50'
+```
 
 ### Counting
-Coming soon
+```js
+const count = true;
+buildQuery({ count })
+=> '$count=true'
+```
 
 ### Grouping / aggregation
 Coming soon

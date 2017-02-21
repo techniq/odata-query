@@ -215,3 +215,72 @@ describe('groupBy', () => {
     expect(actual).toEqual(expected);
   });
 })
+
+describe('select', () => {
+  it('should support passing an array of strings', () => {
+    const select = ['foo', 'bar'];
+    const expected = '$select=foo,bar';
+    const actual = buildQuery({ select });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support passing a string and use verbatim', () => {
+    const select = 'foo,bar';
+    const expected = '$select=foo,bar';
+    const actual = buildQuery({ select });
+    expect(actual).toEqual(expected);
+  });
+
+  // TOOD: Support dot '.' and slash '/' smart expansion
+})
+
+describe('orderBy', () => {
+  it('should support passing an array of strings', () => {
+    const orderBy = ['foo', 'bar'];
+    const expected = '$orderby=foo,bar';
+    const actual = buildQuery({ orderBy });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support passing a string and use verbatim', () => {
+    const orderBy = 'foo,bar';
+    const expected = '$orderby=foo,bar';
+    const actual = buildQuery({ orderBy });
+    expect(actual).toEqual(expected);
+  });
+})
+
+describe('count', () => {
+  it('should support include counts', () => {
+    const count = true;
+    const expected = '$count=true';
+    const actual = buildQuery({ count });
+    expect(actual).toEqual(expected);
+  });
+})
+
+describe('pagination', () => {
+  it('should support limiting (top)', () => {
+    const top = 25;
+    const expected = '$top=25';
+    const actual = buildQuery({ top });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support skipping', () => {
+    const skip = 50;
+    const expected = '$skip=50';
+    const actual = buildQuery({ skip });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support paginating (skip and limiting)', () => {
+    const page = 3;
+    const perPage = 25;
+    const top = perPage;
+    const skip = perPage * (page - 1);
+    const expected = '$top=25&$skip=50';
+    const actual = buildQuery({ top, skip });
+    expect(actual).toEqual(expected);
+  });
+})
