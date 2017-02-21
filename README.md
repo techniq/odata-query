@@ -18,7 +18,7 @@ import buildQuery from 'odata-query'
 const query = buildQuery({...})
 fetch(`http://localhost?${query}`)
 ``` 
-where the query object syntax for `{...}` is defined below.  There is also [react-odata](https://github.com/techniq/react-odata) which utilizies this library for a declarative component.
+where the query object syntax for `{...}` is defined below.  There is also [react-odata](https://github.com/techniq/react-odata) which utilizies this library for a declarative React component.
 
 ## Usage
 See [tests](src/index.test.js) for examples as well
