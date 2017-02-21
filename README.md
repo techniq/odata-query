@@ -69,7 +69,7 @@ Supported operators: `and`, `or`
 Using an object
 ```js
 const filter = {
-  SomeCollection: {
+  ItemsProp: {
     any: {
       SomeProp: 1,
       AnotherProp: 2
@@ -78,13 +78,13 @@ const filter = {
 };
     
 buildQuery({ filter })
-=> '$filter=SomeCollection/any(t:t/SomeProp eq 1 and t/AnotherProp eq 2)'
+=> '$filter=ItemsProp/any(i:i/SomeProp eq 1 and i/AnotherProp eq 2)'
 ```
 
 or also as an array of object
 ```js
 const filter = {
-  SomeCollection: {
+  ItemsProp: {
     any: [
       { SomeProp: 1 },
       { AnotherProp: 2},
@@ -93,13 +93,13 @@ const filter = {
 };
     
 buildQuery({ filter })
-=> '$filter=SomeCollection/any(t:t/SomeProp eq 1 and t/AnotherProp eq 2)'
+=> '$filter=ItemsProp/any(i:i/SomeProp eq 1 and i/AnotherProp eq 2)'
 ```
 
 ##### Specify logical operator (and, or)
 ```js
 const filter = {
-  SomeCollection: {
+  ItemsProp: {
     any: {
       or: [
         { SomeProp: 1 },
@@ -110,7 +110,7 @@ const filter = {
 };
     
 buildQuery({ filter })
-=> '$filter=SomeCollection/any(t:(t/SomeProp eq 1 or t/AnotherProp eq 2)'
+=> '$filter=ItemsProp/any(i:(i/SomeProp eq 1 or i/AnotherProp eq 2)'
 ```
 
 Supported operators: `any`, `all`
