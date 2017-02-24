@@ -41,6 +41,13 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+
+    it('should ignore/omit filter if set to undefined', () => {
+      const filter = { SomeProp: 1, IgnoreProp: undefined };
+      const expected = '$filter=SomeProp eq 1';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
   });
 
   describe('logical operators', () => {

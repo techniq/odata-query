@@ -92,6 +92,8 @@ function buildFilter(filters = {}, propPrefix = '') {
             result.push(`${op}(${propName}, ${handleValue(value[op])})`) 
           }
         })
+      } else if (value === undefined) {
+        // Ignore/omit filter
       } else {
         throw new Error(`Unexpected value type: ${value}`)
       }
