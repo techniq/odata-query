@@ -196,7 +196,7 @@ Or you can return only the count by passing a filter object to `count` (or empty
 ```js
 const count = { PropName: 1 }
 const query = buildQuery({ count })
-=> '/$count?PropName eq 1'
+=> '/$count?$filter=PropName eq 1'
 ```
 
 ### Grouping / aggregation
