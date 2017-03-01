@@ -16,7 +16,7 @@ and then use the library
 import buildQuery from 'odata-query'
 
 const query = buildQuery({...})
-fetch(`http://localhost?${query}`)
+fetch(`http://localhost${query}`)
 ``` 
 where the query object syntax for `{...}` is defined below.  There is also [react-odata](https://github.com/techniq/react-odata) which utilizies this library for a declarative React component.
 
@@ -26,21 +26,21 @@ See [tests](src/index.test.js) for examples as well
 ### Filtering
 ```js
 buildQuery({ filter: {...} })
-=> '$filter=...'
+=> '?$filter=...'
 ```
 
 #### Simple filter
 ```js
 const filter = { PropName: 1 };
 buildQuery({ filter })
-=> '$filter=PropName eq 1'
+=> '?$filter=PropName eq 1'
 ```
 
 #### Comparison operators
 ```js
 const filter = { PropName: { gt: 5 } };
 buildQuery({ filter })
-=> '$filter=PropName gt 5'
+=> '?$filter=PropName gt 5'
 ```
 Supported operators: `eq`, `ne`, `gt`, `ge`, `lt`, `le`, `in`
 
@@ -59,7 +59,7 @@ const filter = {
 };
     
 buildQuery({ filter })
-=> '$filter=SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, "foo")'
+=> '?$filter=SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, "foo")'
 ```
 Supported operators: `and`, `or`
 
@@ -78,7 +78,7 @@ const filter = {
 };
     
 buildQuery({ filter })
-=> '$filter=ItemsProp/any(i:i/SomeProp eq 1 and i/AnotherProp eq 2)'
+=> '?$filter=ItemsProp/any(i:i/SomeProp eq 1 and i/AnotherProp eq 2)'
 ```
 
 or also as an array of object
@@ -93,7 +93,7 @@ const filter = {
 };
     
 buildQuery({ filter })
-=> '$filter=ItemsProp/any(i:i/SomeProp eq 1 and i/AnotherProp eq 2)'
+=> '?$filter=ItemsProp/any(i:i/SomeProp eq 1 and i/AnotherProp eq 2)'
 ```
 
 ##### Specify logical operator (and, or)
@@ -110,7 +110,7 @@ const filter = {
 };
     
 buildQuery({ filter })
-=> '$filter=ItemsProp/any(i:(i/SomeProp eq 1 or i/AnotherProp eq 2)'
+=> '?$filter=ItemsProp/any(i:(i/SomeProp eq 1 or i/AnotherProp eq 2)'
 ```
 
 Supported operators: `any`, `all`
@@ -160,14 +160,14 @@ buildQuery({ filter })
 ```js
 const select = ['Foo', 'Bar'];
 buildQuery({ select })
-=> '$select=Foo,Bar'
+=> '?$select=Foo,Bar'
 ```
 
 ### Ordering
 ```js
 const orderBy = ['Foo desc', 'Bar'];
 buildQuery({ orderBy })
-=> '$orderby=Foo desc,Bar'
+=> '?$orderby=Foo desc,Bar'
 ```
 
 ### Expanding
@@ -181,14 +181,14 @@ const perPage = 25;
 const top = perPage;
 const skip = perPage * (page - 1);
 buildQuery({ top, skip })
-=> '$top=25&$skip=50'
+=> '?$top=25&$skip=50'
 ```
 
 ### Counting
 ```js
 const count = true;
 buildQuery({ count })
-=> '$count=true'
+=> '?$count=true'
 ```
 
 ### Grouping / aggregation

@@ -5,59 +5,50 @@ const COLLECTION_OPERATORS = ['any', 'all'];
 export default function ({ select, filter, groupBy, orderBy, top, skip, count, expand } = {}) {
   const builtFilter = buildFilter(filter)
 
+  let path = '';
+  const params = {};
+
+  if (select) {
+    params.$select = select
+  }
+
   if (groupBy) {
-    const params = {};
-    const applyParams = [];
+    const applyParam = [];
 
     if (builtFilter) {
-      applyParams.push(`filter(${builtFilter})`)
+      applyParam.push(`filter(${builtFilter})`)
     }
-
     // TODO: Support `groupBy` subproperties using '/' or '.'
-    applyParams.push(`groupby((${groupBy}),aggregate(Id with countdistinct as Total))`)
+    applyParam.push(`groupby((${groupBy}),aggregate(Id with countdistinct as Total))`)
+    params.$apply = applyParam.join('/');
+  } else if (builtFilter) {
+    params.$filter = builtFilter
+  }
 
-    params.$apply = applyParams.join('/');
+  if (top) {
+    params.$top = top
+  }
 
-    if (orderBy) {
-      params.$orderby = orderBy
-    }
+  if (skip) {
+    params.$skip = skip
+  }
 
-    return Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
-  } else {
-    const params = {};
-
-    if (select) {
-      params.$select = select
-    }
-
-    if (builtFilter) {
-      params.$filter = builtFilter
-    }
-
-    if (orderBy) {
-      params.$orderby = orderBy
-    }
-
-    if (top) {
-      params.$top = top
-    }
-
-    if (skip) {
-      params.$skip = skip
-    }
-
-    if (count) {
+  if (count) {
       params.$count = true
     }
-
-    if (expand) {
-      // TODO: Seperate and built out based on dotted notation 'Foo.Bar.Baz' => '$expand=Foo($expand=Bar($expand=Baz))
-      // example: $expand=Source,SourceType,Site,Customer,Status,Tasks,Tasks($expand=AssignedUser),Tasks($expand=AssignedGroup),Tasks($expand=Status)
-      params.$expand = expand
-    }
-
-    return Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
   }
+
+  if (expand) {
+    // TODO: Seperate and built out based on dotted notation 'Foo.Bar.Baz' => '$expand=Foo($expand=Bar($expand=Baz))
+    // example: $expand=Source,SourceType,Site,Customer,Status,Tasks,Tasks($expand=AssignedUser),Tasks($expand=AssignedGroup),Tasks($expand=Status)
+    params.$expand = expand
+  }
+
+  if (orderBy) {
+    params.$orderby = orderBy
+  }
+
+  return buildUrl(path, params)
 }
 
 function buildFilter(filters = {}, propPrefix = '') {
@@ -116,5 +107,13 @@ function handleValue(value) {
   } else {
     // TODO: Figure out how best to specify types.  See: https://github.com/devnixs/ODataAngularResources/blob/master/src/odatavalue.js
     return value
+  }
+}
+
+function buildUrl(path, params) {
+  if (Object.keys(params).length) {
+    return path + '?' + Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+  } else {
+    return path;
   }
 }
