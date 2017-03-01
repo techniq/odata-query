@@ -167,7 +167,7 @@ buildQuery({ select })
 ```js
 const orderBy = ['Foo desc', 'Bar'];
 buildQuery({ orderBy })
-=> '$count=Foo desc,Bar'
+=> '$orderby=Foo desc,Bar'
 ```
 
 ### Expanding
