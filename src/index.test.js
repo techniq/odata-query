@@ -207,6 +207,15 @@ describe('groupBy', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('should allow filtering', () => {
+    const groupBy = 'SomeProp';
+    const filter = { PropName: 1 };
+    const expected = '?$apply=filter(PropName eq 1)/groupby((SomeProp),aggregate(Id with countdistinct as Total))';
+    const actual = buildQuery({ filter, groupBy });
+    expect(actual).toEqual(expected);
+  });
+  
+
   it('should allow passing multiple properites as an array', () => {
     const groupBy = ['FirstProp', 'SecondProp'];
     const expected = '?$apply=groupby((FirstProp,SecondProp),aggregate(Id with countdistinct as Total))';
