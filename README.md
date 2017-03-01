@@ -192,16 +192,11 @@ buildQuery({ count })
 => '?$count=true'
 ```
 
-Or you can return only the count by passing the a filter object to `count`
+Or you can return only the count by passing a filter object to `count` (or empty object to count all)
 ```js
 const count = { PropName: 1 }
 const query = buildQuery({ count })
 => '/$count?PropName eq 1'
-```
-you can also pass an empty object to `count` to count all
-
-```js
-fetch(`http://localhost${query}`)
 ```
 
 ### Grouping / aggregation
