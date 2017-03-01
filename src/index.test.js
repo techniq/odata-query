@@ -264,6 +264,21 @@ describe('count', () => {
     const actual = buildQuery({ count });
     expect(actual).toEqual(expected);
   });
+
+  it('should query for only count', () => {
+    const count = { PropName: 1 };
+    const expected = '/$count?$filter=PropName eq 1';
+    const actual = buildQuery({ count });
+    expect(actual).toEqual(expected);
+  });
+  
+  it('should allow groupby when querying for only count', () => {
+    const count = { PropName: 1 };
+    const groupBy = 'SomeProp';
+    const expected = '/$count?$apply=filter(PropName eq 1)/groupby((SomeProp),aggregate(Id with countdistinct as Total))';
+    const actual = buildQuery({ count, groupBy });
+    expect(actual).toEqual(expected);
+  });
 })
 
 describe('pagination', () => {

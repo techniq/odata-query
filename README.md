@@ -185,10 +185,21 @@ buildQuery({ top, skip })
 ```
 
 ### Counting
+Include count inline with result
 ```js
 const count = true;
 buildQuery({ count })
 => '?$count=true'
+```
+
+Or you can return only the count by passing the a filter object to `count`
+```js
+const count = { PropName: 1 }
+const query = buildQuery({ count })
+=> '/$count?PropName eq 1'
+```
+```js
+fetch(`http://localhost${query}`)
 ```
 
 ### Grouping / aggregation

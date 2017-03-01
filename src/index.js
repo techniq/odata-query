@@ -3,7 +3,7 @@ const LOGICAL_OPERATORS = ['and', 'or', 'not'];
 const COLLECTION_OPERATORS = ['any', 'all'];
 
 export default function ({ select, filter, groupBy, orderBy, top, skip, count, expand } = {}) {
-  const builtFilter = buildFilter(filter)
+  const builtFilter = buildFilter(count instanceof Object ? count : filter)
 
   let path = '';
   const params = {};
@@ -34,7 +34,10 @@ export default function ({ select, filter, groupBy, orderBy, top, skip, count, e
   }
 
   if (count) {
+    if (typeof(count) === 'boolean') {
       params.$count = true
+    } else {
+      path = '/$count';
     }
   }
 
