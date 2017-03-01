@@ -275,6 +275,13 @@ describe('count', () => {
   });
 
   it('should query for only count', () => {
+    const count = {};
+    const expected = '/$count';
+    const actual = buildQuery({ count });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should query for only count with filter', () => {
     const count = { PropName: 1 };
     const expected = '/$count?$filter=PropName eq 1';
     const actual = buildQuery({ count });

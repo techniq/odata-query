@@ -198,6 +198,8 @@ const count = { PropName: 1 }
 const query = buildQuery({ count })
 => '/$count?PropName eq 1'
 ```
+you can also pass an empty object to `count` to count all
+
 ```js
 fetch(`http://localhost${query}`)
 ```
