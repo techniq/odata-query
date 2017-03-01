@@ -198,9 +198,6 @@ const count = { PropName: 1 }
 const query = buildQuery({ count })
 => '/$count?PropName eq 1'
 ```
-```js
-fetch(`http://localhost${query}`)
-```
 
 ### Grouping / aggregation
 Coming soon
