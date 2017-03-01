@@ -192,7 +192,7 @@ buildQuery({ count })
 => '?$count=true'
 ```
 
-Or you can return only the count by passing the a filter object to `count`
+Or you can return only the count by passing a filter object to `count` (instead of `filter`)
 ```js
 const count = { PropName: 1 }
 const query = buildQuery({ count })
