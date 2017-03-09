@@ -77,6 +77,15 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+
+    it('should handle implied logical operator on a single property', () => {
+      const startDate = new Date(Date.UTC(2017, 0, 1)) 
+      const endDate = new Date(Date.UTC(2017, 2, 1)) 
+      const filter = { DateProp: { ge: startDate, le: endDate } }
+      const expected = "?$filter=DateProp ge 2017-01-01T00:00:00Z and DateProp le 2017-03-01T00:00:00Z"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
   })
 
   describe('collection operators', () => {

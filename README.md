@@ -45,11 +45,25 @@ buildQuery({ filter })
 Supported operators: `eq`, `ne`, `gt`, `ge`, `lt`, `le`, `in`
 
 #### Logical operators
+##### Implied `and` with an array of objects
 ```js
-// `and` implied by using an array
 const filter = [{ SomeProp: 1 }, { AnotherProp: 2 }, 'startswith(Name, "foo")'];
+buildQuery({ filter })
+=> '?$filter=SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, "foo")'
+```
 
-// or you can be explicit
+##### Implied `and` with multiple comparison operators for a single property
+Useful to perform a `between` query on a `Date` property
+```js
+const startDate = new Date(Date.UTC(2017, 0, 1)) 
+const endDate = new Date(Date.UTC(2017, 2, 1)) 
+const filter = { DateProp: { ge: startDate, le: endDate } }
+buildQuery({ filter })
+=> "?$filter=DateProp ge 2017-01-01T00:00:00Z and DateProp le 2017-03-01T00:00:00Z"
+```
+
+##### Explicit operator
+```js
 const filter = {
   and: [
     { SomeProp: 1 },
@@ -61,6 +75,7 @@ const filter = {
 buildQuery({ filter })
 => '?$filter=SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, "foo")'
 ```
+
 Supported operators: `and`, `or`
 
 #### Collection operators
