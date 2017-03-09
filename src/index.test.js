@@ -5,7 +5,6 @@ it('should return an empty string by default', () => {
 });
 
 describe('filter', () => {
-
   describe('comparison operators', () => {
     it('should handle basic filter without operator', () => {
       const filter = { SomeProp: 1 };
@@ -81,7 +80,6 @@ describe('filter', () => {
   })
 
   describe('collection operators', () => {
-
     it('should handle collection operator with object as implied `and`', () => {
       const filter = {
         Tasks: {
@@ -92,22 +90,6 @@ describe('filter', () => {
         }
       }
       const expected = "?$filter=Tasks/any(t:t/AssignedGroupId eq 1234 and t/StatusId eq 300)"
-      const actual = buildQuery({ filter });
-      expect(actual).toEqual(expected);
-    });
-
-    it('should handle collection operator with array of 1 object as implied `and`', () => {
-      const filter = {
-        Tasks: {
-          any: [
-            {
-              AssignedGroupId: 1234,
-              StatusId: 300
-            }
-          ]
-        }
-      }
-      const expected = "?$filter=Tasks/any(t:(t/AssignedGroupId eq 1234 and t/StatusId eq 300))"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -125,8 +107,6 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
-
-
 
     it('should handle collection operator with object definining operator', () => {
       const filter = {
@@ -214,7 +194,6 @@ describe('groupBy', () => {
     const actual = buildQuery({ filter, groupBy });
     expect(actual).toEqual(expected);
   });
-  
 
   it('should allow passing multiple properites as an array', () => {
     const groupBy = ['FirstProp', 'SecondProp'];
