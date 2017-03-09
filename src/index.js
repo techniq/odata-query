@@ -59,7 +59,7 @@ function buildFilter(filters = {}, propPrefix = '') {
     // Use raw filter string
     return filters;
   } else if (Array.isArray(filters)) {
-    return filters.map(f => buildFilter(f, propPrefix)).join(' and ');
+    return `(${filters.map(f => buildFilter(f, propPrefix)).join(' and ')})`;
   } else if (typeof(filters) === 'object') {
     const filtersArray = Object.keys(filters).reduce((result, filterKey) => {
       const value = filters[filterKey];
