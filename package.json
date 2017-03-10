@@ -9,11 +9,11 @@
   ],
   "main": "dist/index.js",
   "devDependencies": {
-    "babel-cli": "^6.22.2",
-    "babel-jest": "^18.0.0",
-    "babel-preset-react-app": "^2.0.1",
-    "jest": "^18.1.0",
-    "rimraf": "^2.5.4"
+    "babel-cli": "^6.23.0",
+    "babel-jest": "^19.0.0",
+    "babel-preset-react-app": "^2.2.0",
+    "jest": "^19.0.2",
+    "rimraf": "^2.6.1"
   },
   "dependencies": {},
   "scripts": {
