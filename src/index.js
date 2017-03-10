@@ -65,15 +65,15 @@ function buildFilter(filters = {}, propPrefix = '') {
 
       if (Array.isArray(value)) {
         result.push(`(${value.map(v => buildFilter(v, propPrefix)).join(` ${filterKey} `)})`)
-      } else if (["number", "string", "boolean"].includes(typeof(value)) || value instanceof Date) {
+      } else if (["number", "string", "boolean"].indexOf(typeof(value)) !== -1 || value instanceof Date) {
         // Simple key/value handled as equals operator
         result.push(`${propName} eq ${handleValue(value)}`) 
       } else if (value instanceof Object) {
         const operators = Object.keys(value);
         operators.forEach(op => {
-          if ([...COMPARISON_OPERATORS, ...LOGICAL_OPERATORS].includes(op)) {
+          if ([...COMPARISON_OPERATORS, ...LOGICAL_OPERATORS].indexOf(op) !== -1) {
             result.push(`${propName} ${op} ${handleValue(value[op])}`) 
-          } else if (COLLECTION_OPERATORS.includes(op)) {
+          } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
             const lambaParameter = propName[0].toLowerCase();
             result.push(`${propName}/${op}(${lambaParameter}:${buildFilter(value[op], lambaParameter)})`) 
           } else if (op === 'in') {
