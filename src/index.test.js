@@ -28,8 +28,8 @@ describe('filter', () => {
     });
 
     it('should allow passing filter as an array of objects and strings', () => {
-      const filter = [{ SomeProp: 1 }, { AnotherProp: 2 }, 'startswith(Name, "foo")'];
-      const expected = '?$filter=(SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, "foo"))'
+      const filter = [{ SomeProp: 1 }, { AnotherProp: 2 }, "startswith(Name, 'R')"];
+      const expected = "?$filter=(SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, 'R'))"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
