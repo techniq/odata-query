@@ -186,7 +186,29 @@ buildQuery({ orderBy })
 ```
 
 ### Expanding
-Coming soon
+#### Nested expand using slash seperator
+```js
+const expand = 'Friends/Photos'
+buildQuery({ expand })
+=> '?$expand=Friends($expand=Photos)';
+```
+
+#### Nested expand with an object
+```js
+const expand = { Friends: { expand: 'Photos' } }
+buildQuery({ expand })
+=> '?$expand=Friends($expand=Photos)';
+```
+
+#### Multiple expands as an array
+Supports both string (with slash seperators) and objects
+```js
+const expand = ['Foo', 'Baz'];
+buildQuery({ expand })
+=> '?$expand=Foo,Bar';
+```
+#### Supports `select`, `top`, `orderBy`, and `filter`
+See tests for examples
 
 ### Pagination (skip and top)
 #### Get page 3 (25 records per page)

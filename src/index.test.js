@@ -310,3 +310,96 @@ describe('pagination', () => {
     expect(actual).toEqual(expected);
   });
 })
+
+describe('expand', () => {
+  it('should support basic expansion', () => {
+    const expand = 'Foo';
+    const expected = '?$expand=Foo';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support multiple expands as an array', () => {
+    const expand = ['Foo', 'Bar'];
+    const expected = '?$expand=Foo,Bar';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow nested expands with slash seperator', () => {
+    const expand = 'Friends/Photos'
+    const expected = '?$expand=Friends($expand=Photos)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support multiple nested expands with slash seperator as an array', () => {
+    const expand = ['Foo/Bar/Baz', 'One/Two'];
+    const expected = '?$expand=Foo($expand=Bar($expand=Baz)),One($expand=Two)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow nested expands with objects', () => {
+    const expand = { Friends: { expand: 'Photos' } };
+    const expected = '?$expand=Friends($expand=Photos)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+  
+  it('should allow multiple nested expands with objects', () => {
+    const expand = [{ Friends: { expand: 'Photos' } }, { One: { expand: 'Two' } }];
+    const expected = '?$expand=Friends($expand=Photos),One($expand=Two)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow multiple expands mixing objects and strings', () => {
+    const expand = [{ Friends: { expand: 'Photos' } }, 'Foo/Bar/Baz'];
+    const expected = '?$expand=Friends($expand=Photos),Foo($expand=Bar($expand=Baz))';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow expand with select', () => {
+    const expand = { Friends: { select: 'Name' } };
+    const expected = '?$expand=Friends($select=Name)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow expand with top', () => {
+    const expand = { Friends: { top: 10 } };
+    const expected = '?$expand=Friends($top=10)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow expand with select and top', () => {
+    const expand = { Friends: { select: 'Name', top: 10 } };
+    const expected = '?$expand=Friends($select=Name;$top=10)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow expand with select as array and top', () => {
+    const expand = { Friends: { select: ['Name', 'Age'], top: 10 } };
+    const expected = '?$expand=Friends($select=Name,Age;$top=10)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow expand with filter', () => {
+    const expand = { Trips: { filter: { Name: 'Trip in US' } } };
+    const expected = "?$expand=Trips($filter=Name eq 'Trip in US')";
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow expand with orderby', () => {
+    const expand = { Products: { orderBy: 'ReleaseDate asc' } };
+    const expected = "?$expand=Products($orderby=ReleaseDate asc)";
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+});

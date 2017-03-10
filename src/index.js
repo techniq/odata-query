@@ -42,9 +42,7 @@ export default function ({ select, filter, groupBy, orderBy, top, skip, count, e
   }
 
   if (expand) {
-    // TODO: Seperate and built out based on dotted notation 'Foo.Bar.Baz' => '$expand=Foo($expand=Bar($expand=Baz))
-    // example: $expand=Source,SourceType,Site,Customer,Status,Tasks,Tasks($expand=AssignedUser),Tasks($expand=AssignedGroup),Tasks($expand=Status)
-    params.$expand = expand
+    params.$expand = buildExpand(expand)
   }
 
   if (orderBy) {
@@ -110,6 +108,41 @@ function handleValue(value) {
   } else {
     // TODO: Figure out how best to specify types.  See: https://github.com/devnixs/ODataAngularResources/blob/master/src/odatavalue.js
     return value
+  }
+}
+
+function buildExpand(expands) {
+  if (typeof(expands) === 'number') {
+    return expands
+  } else if (typeof(expands) === 'string') {
+
+    if (expands.indexOf('/') === -1) {
+      return expands
+    }
+
+    // Change `Foo/Bar/Baz` to `Foo($expand=Bar($expand=Baz))`
+    return expands.split('/').reverse().reduce((results, item, index, arr) => {
+      if (index === 0) {
+        // First item
+        return `$expand=${item}`
+      } else if(index === arr.length - 1) {
+        // Last item, don't add `$expand=` prefix (added above)
+        return `${item}(${results})`
+      } else {
+        // Other items
+        return `$expand=${item}(${results})`
+      }
+    }, '')
+  } else if (Array.isArray(expands)) {
+    return `${expands.map(e => buildExpand(e)).join(',')}`;
+  } else if (typeof(expands) === 'object') {
+    return Object.keys(expands)
+                 // Supports `orderBy` and `orderby`
+                 .map(key => ['expand', 'select', 'top', 'orderby', 'filter'].indexOf(key.toLowerCase()) !== -1
+                    ? `$${key.toLowerCase()}=${key === 'filter' ? buildFilter(expands[key]) : buildExpand(expands[key])}`
+                    : `${key}(${buildExpand(expands[key])})`
+                  )
+                 .join(';')
   }
 }
 
