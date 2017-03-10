@@ -207,8 +207,50 @@ const expand = ['Foo', 'Baz'];
 buildQuery({ expand })
 => '?$expand=Foo,Bar';
 ```
-#### Supports `select`, `top`, `orderBy`, and `filter`
-See tests for examples
+#### Filter expanded items
+```js
+const expand = { Trips: { filter: { Name: 'Trip in US' } } };
+buildQuery({ expand })
+=> "?$expand=Trips($filter=Name eq 'Trip in US')";
+```
+
+#### Project expanded items (select only specific properties)
+```js
+const expand = { Friends: { select: ['Name', 'Age'] } };
+buildQuery({ expand })
+=> '?$expand=Friends($select=Name,Age)';
+```
+
+#### Return only a subset of expanded items
+```js
+const expand = { Friends: { top: 10 } };
+buildQuery({ expand })
+=> '?$expand=Friends($top=10)';
+```
+
+#### Order expanded items
+```js
+const expand = { Products: { orderBy: 'ReleaseDate asc' } };
+buildQuery({ expand })
+=> "?$expand=Products($orderby=ReleaseDate asc)";
+```
+
+#### `filter`, `select`, `top`, and `orderBy` can be used together
+Select only the first and last name of the top 10 friends who's first name starts with "R" and order by their last name
+```js
+const expand = {
+  Friends: {
+    select: ['FirstName', 'LastName'],
+    top: 10,
+    filter: {
+      FirstName: { startswith: 'R' }
+    },
+    orderBy: 'LastName asc'
+  }
+};
+buildQuery({ expand })
+=> '?$expand=Friends($select=Name,Age;$top=10;$filter=startswith eq 'L'))';
+```
 
 ### Pagination (skip and top)
 #### Get page 3 (25 records per page)
