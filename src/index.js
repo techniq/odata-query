@@ -57,14 +57,22 @@ function buildFilter(filters = {}, propPrefix = '') {
     // Use raw filter string
     return filters;
   } else if (Array.isArray(filters)) {
-    return `(${filters.map(f => buildFilter(f, propPrefix)).join(' and ')})`;
+    // return `(${filters.map(f => buildFilter(f, propPrefix)).join(' and ')})`;
+    const builtFilters = filters.map(f => buildFilter(f, propPrefix));
+    if (builtFilters.length) {
+      return `(${builtFilters.join(` and `)})`
+    }
   } else if (typeof(filters) === 'object') {
     const filtersArray = Object.keys(filters).reduce((result, filterKey) => {
       const value = filters[filterKey];
       const propName = propPrefix ? `${propPrefix}/${filterKey}` : filterKey;
 
       if (Array.isArray(value)) {
-        result.push(`(${value.map(v => buildFilter(v, propPrefix)).join(` ${filterKey} `)})`)
+        const op = filterKey;
+        const builtFilters = value.map(v => buildFilter(v, propPrefix));
+        if (builtFilters.length) {
+          result.push(`(${builtFilters.join(` ${op} `)})`)
+        }
       } else if (["number", "string", "boolean"].indexOf(typeof(value)) !== -1 || value instanceof Date) {
         // Simple key/value handled as equals operator
         result.push(`${propName} eq ${handleValue(value)}`) 

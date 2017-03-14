@@ -70,10 +70,17 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+    
+    it('should ignore implied logical operator with no filters', () => {
+      const filter = []
+      const expected = ""
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
 
-    it('should handle logical operators with no filters', () => {
+    it('should ignore logical operators with no filters', () => {
       const filter = { and: [] }
-      const expected = "?$filter=()"
+      const expected = ""
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
