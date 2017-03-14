@@ -57,7 +57,6 @@ function buildFilter(filters = {}, propPrefix = '') {
     // Use raw filter string
     return filters;
   } else if (Array.isArray(filters)) {
-    // return `(${filters.map(f => buildFilter(f, propPrefix)).join(' and ')})`;
     const builtFilters = filters.map(f => buildFilter(f, propPrefix));
     if (builtFilters.length) {
       return `(${builtFilters.join(` and `)})`
