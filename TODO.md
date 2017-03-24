@@ -5,6 +5,17 @@
 - Support specifying types
   - See: https://github.com/devnixs/ODataAngularResources/blob/master/src/odatavalue.js
 - Support `$search` and `$format`?
+- Improve `groupBy` syntax
+  - applyParam.push(`groupby((${groupBy}),aggregate(Id with countdistinct as Total))`)
+
+groupBy: ['Foo']
+groupBy: {
+  columns: ['Foo'],
+  aggregate: {
+    // Id...
+    countdistinct: 'Total'
+  }
+}
 
 - [Support as much of the spec as makes since](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html)
   - https://docs.oasis-open.org/odata/odata/v4.0/os/part1-protocol/odata-v4.0-os-part1-protocol.html#_Functions_1
