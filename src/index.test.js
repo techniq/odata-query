@@ -63,6 +63,13 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+    
+    it('should handle simple logical operators (and, or, etc) as an object (no parens)', () => {
+      const filter = { and: { SomeProp: 1 , AnotherProp: 2 } }
+      const expected = "?$filter=SomeProp eq 1 and AnotherProp eq 2"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
 
     it('should handle nested logical operators', () => {
       const filter = { and: [{ SomeProp: 1 }, { or: [{ AnotherProp: 2 }, { ThirdProp: 3 }] }] }
@@ -131,7 +138,7 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should handle collection operator with object definining operator', () => {
+    it('should handle collection operator with object specifying operator', () => {
       const filter = {
         Tasks: {
           any: {

@@ -66,15 +66,20 @@ function buildFilter(filters = {}, propPrefix = '') {
       const value = filters[filterKey];
       const propName = propPrefix ? `${propPrefix}/${filterKey}` : filterKey;
 
-      if (Array.isArray(value)) {
+      if (["number", "string", "boolean"].indexOf(typeof(value)) !== -1 || value instanceof Date) {
+        // Simple key/value handled as equals operator
+        result.push(`${propName} eq ${handleValue(value)}`) 
+      } else if (Array.isArray(value)) {
         const op = filterKey;
         const builtFilters = value.map(v => buildFilter(v, propPrefix));
         if (builtFilters.length) {
           result.push(`(${builtFilters.join(` ${op} `)})`)
         }
-      } else if (["number", "string", "boolean"].indexOf(typeof(value)) !== -1 || value instanceof Date) {
-        // Simple key/value handled as equals operator
-        result.push(`${propName} eq ${handleValue(value)}`) 
+      } else if (LOGICAL_OPERATORS.indexOf(propName) !== -1) {
+        const builtFilters = Object.keys(value).map(valueKey => buildFilter({ [valueKey]: value[valueKey] }));
+        if (builtFilters.length) {
+          result.push(`${builtFilters.join(` ${propName} `)}`)
+        }
       } else if (value instanceof Object) {
         const operators = Object.keys(value);
         operators.forEach(op => {
