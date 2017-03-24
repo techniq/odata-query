@@ -1,6 +1,7 @@
 const COMPARISON_OPERATORS = ['eq', 'ne', 'gt', 'ge', 'lt', 'le'];
 const LOGICAL_OPERATORS = ['and', 'or', 'not'];
 const COLLECTION_OPERATORS = ['any', 'all'];
+const BOOLEAN_FUNCTIONS = ['startswith', 'endswith', 'contains'];
 
 export default function ({ select, filter, groupBy, orderBy, top, skip, count, expand } = {}) {
   const builtFilter = buildFilter(count instanceof Object ? count : filter)
@@ -89,14 +90,16 @@ function buildFilter(filters = {}, propPrefix = '') {
             const lambaParameter = propName[0].toLowerCase();
             result.push(`${propName}/${op}(${lambaParameter}:${buildFilter(value[op], lambaParameter)})`) 
           } else if (op === 'in') {
-            // Convert `{ Prop: [1,2,3] }` to `Prop eq 1 or Prop eq 2 or Prop eq 3`
+            // Convert `{ Prop: { in: [1,2,3] } }` to `Prop eq 1 or Prop eq 2 or Prop eq 3`
             result.push(value[op].map(v => `${propName} eq ${handleValue(v)}`).join(' or '))
-          } else if (op.indexOf('()') === op.length - 2) {
-            // Single boolean function (startswith(), endswith(), contains())
-            result.push(`${op.slice(0, op.length - 2)}(${propName}, ${handleValue(value[op])})`) 
           } else {
-            // Nested property
-            result.push(`${propName}/${buildFilter(value)}`);
+            if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
+              // Simple boolean functions (startswith, endswith, contains)
+              result.push(`${op}(${propName}, ${handleValue(value[op])})`) 
+            } else {
+              // Nested property
+              result.push(`${propName}/${buildFilter(value)}`);
+            }
           }
         })
       } else if (value === undefined) {
