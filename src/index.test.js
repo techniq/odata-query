@@ -47,10 +47,17 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+
+    it('should support nested properties', () => {
+      const filter = { SomeProp: { Value: 1 }};
+      const expected = '?$filter=SomeProp/Value eq 1';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
   });
 
   describe('logical operators', () => {
-    it('should handle simple logical operators (and, or, etc)', () => {
+    it('should handle simple logical operators (and, or, etc) as an array', () => {
       const filter = { and: [{ SomeProp: 1 }, { AnotherProp: 2 }] }
       const expected = "?$filter=(SomeProp eq 1 and AnotherProp eq 2)"
       const actual = buildQuery({ filter });
@@ -139,6 +146,23 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+    
+    it('should handle collection operator with nested property', () => {
+      const filter = {
+        Tasks: {
+          any: [{
+            CreatedBy: {
+              Name: 'Sean Lynch'
+            },
+            // 'CreatedBy/Name': 'Sean Lynch',
+            StatusId: 300
+          }]
+        }
+      }
+      const expected = "?$filter=Tasks/any(t:(t/CreatedBy/Name eq 'Sean Lynch' and t/StatusId eq 300))"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
   });
 
   describe('data types', () => {
@@ -173,7 +197,7 @@ describe('filter', () => {
 
   describe('functions', () => {
     it('should allow passing boolean functions as operators', () => {
-      const filter = { Name: { contains: 'foo'} }
+      const filter = { Name: { 'contains()': 'foo'} }
       const expected = "?$filter=contains(Name, 'foo')"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
