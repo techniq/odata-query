@@ -3,7 +3,7 @@ const LOGICAL_OPERATORS = ['and', 'or', 'not'];
 const COLLECTION_OPERATORS = ['any', 'all'];
 const BOOLEAN_FUNCTIONS = ['startswith', 'endswith', 'contains'];
 
-export default function ({ select, filter, groupBy, orderBy, top, skip, count, expand } = {}) {
+export default function ({ select, filter, groupBy, orderBy, top, skip, key, count, expand } = {}) {
   const builtFilter = buildFilter(count instanceof Object ? count : filter)
 
   let path = '';
@@ -34,11 +34,20 @@ export default function ({ select, filter, groupBy, orderBy, top, skip, count, e
     params.$skip = skip
   }
 
+  if (key) {
+    if (typeof(key) === 'object') {
+      const keys = Object.keys(key).map(k => `${k}=${key[k]}`).join(',')
+      path += `(${keys})`;
+    } else {
+      path += `(${key})`;
+    }
+  }
+
   if (count) {
     if (typeof(count) === 'boolean') {
       params.$count = true
     } else {
-      path = '/$count';
+      path += '/$count';
     }
   }
 

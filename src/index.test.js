@@ -292,6 +292,45 @@ describe('orderBy', () => {
   });
 })
 
+describe('key', () => {
+  it('should support key as simple value', () => {
+    const key = 1;
+    const expected = '(1)';
+    const actual = buildQuery({ key });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support key as object', () => {
+    const key = { Id: 1 };
+    const expected = '(Id=1)';
+    const actual = buildQuery({ key });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support key as object with multiple keys', () => {
+    const key = { OrderID: 1, ItemNo: 2 };
+    const expected = '(OrderID=1,ItemNo=2)';
+    const actual = buildQuery({ key });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support key with filter', () => {
+    const key = 1;
+    const filter = { SomeProp: 123 };
+    const expected = '(1)?$filter=SomeProp eq 123';
+    const actual = buildQuery({ key, filter });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support key with expand', () => {
+    const key = 1;
+    const expand = ['Foo']
+    const expected = '(1)?$expand=Foo';
+    const actual = buildQuery({ key, expand });
+    expect(actual).toEqual(expected);
+  });
+});
+
 describe('count', () => {
   it('should support include counts', () => {
     const count = true;

@@ -263,6 +263,21 @@ buildQuery({ top, skip })
 => '?$top=25&$skip=50'
 ```
 
+### Single-item (key)
+Simple value
+```js
+const key = 1;
+buildQuery({ key })
+=> '(1)'
+```
+
+As object (explicit key property
+```js
+const key = { Id: 1 };
+buildQuery({ key })
+=> '(Id=1)'
+```
+
 ### Counting
 Include count inline with result
 ```js
