@@ -151,10 +151,10 @@ function buildExpand(expands) {
     // Change `Foo/Bar/Baz` to `Foo($expand=Bar($expand=Baz))`
     return expands.split('/').reverse().reduce((results, item, index, arr) => {
       if (index === 0) {
-        // First item
+        // Inner-most item
         return `$expand=${item}`
       } else if(index === arr.length - 1) {
-        // Last item, don't add `$expand=` prefix (added above)
+        // Outer-most item, don't add `$expand=` prefix (added above)
         return `${item}(${results})`
       } else {
         // Other items
