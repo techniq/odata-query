@@ -424,6 +424,13 @@ describe('expand', () => {
     expect(actual).toEqual(expected);
   });
   
+  it('should allow multiple expands with objects', () => {
+    const expand = { Friends: {}, One: { orderBy: 'Two' } };
+    const expected = '?$expand=Friends,One($orderby=Two)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
   it('should allow multiple nested expands with objects', () => {
     const expand = [{ Friends: { expand: 'Photos' } }, { One: { expand: 'Two' } }];
     const expected = '?$expand=Friends($expand=Photos),One($expand=Two)';

@@ -2,6 +2,7 @@ const COMPARISON_OPERATORS = ['eq', 'ne', 'gt', 'ge', 'lt', 'le'];
 const LOGICAL_OPERATORS = ['and', 'or', 'not'];
 const COLLECTION_OPERATORS = ['any', 'all'];
 const BOOLEAN_FUNCTIONS = ['startswith', 'endswith', 'contains'];
+const SUPPORTED_EXPAND_PROPERTIES = ['expand', 'select', 'top', 'orderby', 'filter'];
 
 export default function ({ select, filter, groupBy, orderBy, top, skip, key, count, expand } = {}) {
   const builtFilter = buildFilter(count instanceof Object ? count : filter)
@@ -163,14 +164,21 @@ function buildExpand(expands) {
   } else if (Array.isArray(expands)) {
     return `${expands.map(e => buildExpand(e)).join(',')}`;
   } else if (typeof(expands) === 'object') {
-    return Object.keys(expands)
-                 // Supports `orderBy` and `orderby`
-                 .map(key => ['expand', 'select', 'top', 'orderby', 'filter'].indexOf(key.toLowerCase()) !== -1
-                    ? `$${key.toLowerCase()}=${key === 'filter' ? buildFilter(expands[key]) : buildExpand(expands[key])}`
-                    : `${key}(${buildExpand(expands[key])})`
-                  )
-                 .join(';')
-  }
+    const expandKeys = Object.keys(expands);
+
+    if (expandKeys.some(key => SUPPORTED_EXPAND_PROPERTIES.indexOf(key.toLowerCase()) !== -1)) {
+      return expandKeys.map(key => {
+        return `$${key.toLowerCase()}=${key === 'filter' ? buildFilter(expands[key]) : buildExpand(expands[key])}`
+      })
+      .join(';')
+    } else {
+      return expandKeys.map(key => {
+        const builtExpand = buildExpand(expands[key]);
+        return builtExpand ? `${key}(${builtExpand})` : key;
+      })
+      .join(',')
+    }
+}
 }
 
 function buildUrl(path, params) {
