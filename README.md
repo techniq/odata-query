@@ -157,9 +157,6 @@ buildQuery({ filter })
 ```
 Supported operators: `indexof`, `substring`
 
-#### Data types
-Coming soon
-
 #### Strings
 A string can also be passed as the value of the filter and it will be taken as is.  This can be useful when using something like [odata-filter-builder](https://github.com/bodia-uz/odata-filter-builder) or if you want to just write the OData filter sytnax yourself but use the other benefits of the library, such as groupBy, expand, etc.
 ```js
@@ -170,6 +167,9 @@ const filter = f().eq('TypeId', '1')
                   .toString();
 buildQuery({ filter })
 ```
+
+#### Data types
+Coming soon
 
 ### Selecting
 ```js
@@ -249,7 +249,7 @@ const expand = {
   }
 };
 buildQuery({ expand })
-=> '?$expand=Friends($select=Name,Age;$top=10;$filter=startswith eq 'L'))';
+=> '?$expand=Friends($select=Name,Age;$top=10;$filter=startswith eq 'R'))';
 ```
 
 ### Pagination (skip and top)
