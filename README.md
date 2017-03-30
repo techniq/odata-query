@@ -293,5 +293,54 @@ const query = buildQuery({ count })
 => '/$count?$filter=PropName eq 1'
 ```
 
+### Actions
+Action on an entity
+```js
+const key = 1;
+const action = 'Test';
+buildQuery({ key, action })
+=> '(1)/Test'
+```
+
+Action on a collection
+```js
+const action = 'Test';
+buildQuery({ action })
+=> '/Test'
+```
+Action parameters are passed in the body of the request.
+
+### Functions
+Function on an entity
+```js
+const key = 1;
+const func = 'Test';
+buildQuery({ key, func })
+=> '(1)/Test'
+```
+
+Function on an entity with parameters
+```js
+const key = 1;
+const func = { Test: { One: 1, Two: 2 } };
+buildQuery({ key, func })
+=> '(1)/Test(One=1,Two=2)'
+```
+
+Function on a collection
+```js
+const func = 'Test';
+buildQuery({ func })
+=> '/Test'
+```
+
+Function on a collection with parameters
+```js
+const func = { Test: { One: 1, Two: 2 } };
+buildQuery({ func })
+=> '/Test(One=1,Two=2)'
+```
+
+
 ### Grouping / aggregation
 Coming soon

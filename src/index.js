@@ -4,7 +4,7 @@ const COLLECTION_OPERATORS = ['any', 'all'];
 const BOOLEAN_FUNCTIONS = ['startswith', 'endswith', 'contains'];
 const SUPPORTED_EXPAND_PROPERTIES = ['expand', 'select', 'top', 'orderby', 'filter'];
 
-export default function ({ select, filter, groupBy, orderBy, top, skip, key, count, expand } = {}) {
+export default function ({ select, filter, groupBy, orderBy, top, skip, key, count, expand, action, func } = {}) {
   const builtFilter = buildFilter(count instanceof Object ? count : filter)
 
   let path = '';
@@ -49,6 +49,24 @@ export default function ({ select, filter, groupBy, orderBy, top, skip, key, cou
       params.$count = true
     } else {
       path += '/$count';
+    }
+  }
+
+  if (action) {
+    path += `/${action}`;
+  }
+
+  if (func) {
+    if (typeof(func) === 'string') {
+      path += `/${func}`;
+    } else if (typeof(func) === 'object') {
+      const [funcName] = Object.keys(func);
+      const funcParams = Object.keys(func[funcName]).map(p => `${p}=${func[funcName][p]}`).join(',')
+
+      path += `/${funcName}`;
+      if (funcParams.length) {
+        path += `(${funcParams})`;
+      }
     }
   }
 

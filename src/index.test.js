@@ -487,3 +487,52 @@ describe('expand', () => {
     expect(actual).toEqual(expected);
   });
 });
+
+describe('action', () => {
+  it('should support an action on a collection', () => {
+    const action = 'Test';
+    const expected = '/Test';
+    const actual = buildQuery({ action });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support an action on an entity', () => {
+    const key = 1
+    const action = 'Test';
+    const expected = '(1)/Test';
+    const actual = buildQuery({ key, action });
+    expect(actual).toEqual(expected);
+  });
+});
+
+describe('function', () => {
+  it('should support a function on a collection', () => {
+    const func = 'Test';
+    const expected = '/Test';
+    const actual = buildQuery({ func });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support an function on an entity', () => {
+    const key = 1
+    const func = 'Test';
+    const expected = '(1)/Test';
+    const actual = buildQuery({ key, func });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support an function on a collection with parameters', () => {
+    const func = { Test: { One: 1, Two: 2 } };
+    const expected = '/Test(One=1,Two=2)';
+    const actual = buildQuery({ func });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support an function on an entity with parameters', () => {
+    const key = 1
+    const func = { Test: { One: 1, Two: 2 } };
+    const expected = '(1)/Test(One=1,Two=2)';
+    const actual = buildQuery({ key, func });
+    expect(actual).toEqual(expected);
+  });
+});
