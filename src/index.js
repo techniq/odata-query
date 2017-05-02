@@ -188,7 +188,7 @@ function buildExpand(expands) {
       return expandKeys.map(key => {
         const value =
           key === 'filter' ? buildFilter(expands[key]) :
-          key === 'orderBy' ? buildOrderBy(expands[key]) :
+          key.toLowerCase() === 'orderby' ? buildOrderBy(expands[key]) :
           buildExpand(expands[key]);
         return `$${key.toLowerCase()}=${value}`
       })
