@@ -290,6 +290,32 @@ describe('orderBy', () => {
     const actual = buildQuery({ orderBy });
     expect(actual).toEqual(expected);
   });
+  
+  it('should support ordering a nested property within an expand', () => {
+    const query = {
+      expand: {
+        Memberships: {
+          orderBy: 'Group/Name'
+        }
+      }
+    }
+    const expected = '?$expand=Memberships($orderby=Group/Name)';
+    const actual = buildQuery(query);
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support ordering multiple nested property within an expand', () => {
+    const query = {
+      expand: {
+        Memberships: {
+          orderBy: ['Group/Name', 'Group/Description']
+        }
+      }
+    }
+    const expected = '?$expand=Memberships($orderby=Group/Name,Group/Description)';
+    const actual = buildQuery(query);
+    expect(actual).toEqual(expected);
+  });
 })
 
 describe('key', () => {

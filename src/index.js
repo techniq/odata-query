@@ -75,7 +75,7 @@ export default function ({ select, filter, groupBy, orderBy, top, skip, key, cou
   }
 
   if (orderBy) {
-    params.$orderby = orderBy
+    params.$orderby = buildOrderBy(orderBy)
   }
 
   return buildUrl(path, params)
@@ -186,7 +186,11 @@ function buildExpand(expands) {
 
     if (expandKeys.some(key => SUPPORTED_EXPAND_PROPERTIES.indexOf(key.toLowerCase()) !== -1)) {
       return expandKeys.map(key => {
-        return `$${key.toLowerCase()}=${key === 'filter' ? buildFilter(expands[key]) : buildExpand(expands[key])}`
+        const value =
+          key === 'filter' ? buildFilter(expands[key]) :
+          key === 'orderBy' ? buildOrderBy(expands[key]) :
+          buildExpand(expands[key]);
+        return `$${key.toLowerCase()}=${value}`
       })
       .join(';')
     } else {
@@ -196,7 +200,17 @@ function buildExpand(expands) {
       })
       .join(',')
     }
+  }
 }
+
+function buildOrderBy(orderBy) {
+  if (typeof(orderBy) === 'number') {
+    return orderBy
+  } else if (typeof(orderBy) === 'string') {
+    return orderBy
+  } else if (Array.isArray(orderBy)) {
+    return `${orderBy.map(o => buildOrderBy(o)).join(',')}`;
+  }
 }
 
 function buildUrl(path, params) {
