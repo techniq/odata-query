@@ -24,7 +24,7 @@ where the query object syntax for `{...}` is defined below.  There is also [reac
 See [tests](src/index.test.js) for examples as well
 
 - [Filtering](#filtering)
-  - [Simple Filter](#simple-filter)
+  - [Simple equality filter](#simple-equality-filter)
   - [Comparison operators](#comparison-operators)
   - [Logical operators](#logical-operators)
     - [Implied `and` with an array of objects](#implied-and-with-an-array-of-objects)
@@ -63,7 +63,7 @@ buildQuery({ filter: {...} })
 => '?$filter=...'
 ```
 
-#### Simple filter
+#### Simple equality filter
 ```js
 const filter = { PropName: 1 };
 buildQuery({ filter })
