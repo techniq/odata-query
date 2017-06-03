@@ -50,12 +50,12 @@ See [tests](src/index.test.js) for examples as well
   - [Return only a subset of expanded items](#return-only-a-subset-of-expanded-items)
   - [Order expanded items](#order-expanded-items)
   - [filter, select, top, and orderBy can be used together](#filter-select-top-and-orderby-can-be-used-together)
-- [Pagination (skip and top)](#pagination-skip-and-top))
+- [Pagination (skip and top)](#pagination-skip-and-top)
 - [Single-item (key)](#single-item-key)
 - [Counting](#counting)
 - [Actions](#actions)
-- [Functions](#functions)
-- [Grouping / aggregation](#Grouping--aggregation)
+- [Functions](#functions-1)
+- [Grouping / aggregation](#grouping--aggregation)
   
 ### Filtering
 ```js
