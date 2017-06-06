@@ -23,13 +23,47 @@ where the query object syntax for `{...}` is defined below.  There is also [reac
 ## Usage
 See [tests](src/index.test.js) for examples as well
 
+- [Filtering](#filtering)
+  - [Simple equality filter](#simple-equality-filter)
+  - [Comparison operators](#comparison-operators)
+  - [Logical operators](#logical-operators)
+    - [Implied `and` with an array of objects](#implied-and-with-an-array-of-objects)
+    - [Implied `and` with multiple comparison operators for a single property](#implied-and-with-multiple-comparison-operators-for-a-single-property)
+    - [Explicit operator](#explicit-operator)
+  - [Collection operators](#collection-operators) - `any`, `all`
+    - [Implied and with an object or array of objects](#implied-and)
+    - [Explicit operator (`and`, `or`)](#explicit-operator-and-or)
+  - [Functions](#functions)
+    - [String functions returning boolean](#string-functions-returning-boolean)
+    - [Functions returning non-boolean values (string, int)](#functions-returning-non-boolean-values-string-int)
+    - [Functions returning non-boolean values (string, int) with parameters](#functions-returning-non-boolean-values-string-int-with-parameters)
+  - [Strings](#strings)
+  - [Data types](#data-types)
+- [Selecting](#selecting)
+- [Ordering](#ordering)
+- [Expanding](#expanding)
+  - [Nested expand using slash seperator](#nested-expand-using-slash-seperator)
+  - [Nested expand with an object](#nested-expand-with-an-object)
+  - [Multiple expands as an array](#multiple-expands-as-an-array)
+  - [Filter expanded items](#filter-expanded-items)
+  - [Select only specific properties of expanded items](#select-only-specific-properties-of-expanded-items)
+  - [Return only a subset of expanded items](#return-only-a-subset-of-expanded-items)
+  - [Order expanded items](#order-expanded-items)
+  - [filter, select, top, and orderBy can be used together](#filter-select-top-and-orderby-can-be-used-together)
+- [Pagination (skip and top)](#pagination-skip-and-top)
+- [Single-item (key)](#single-item-key)
+- [Counting](#counting)
+- [Actions](#actions)
+- [Functions](#functions-1)
+- [Grouping / aggregation](#grouping--aggregation)
+  
 ### Filtering
 ```js
 buildQuery({ filter: {...} })
 => '?$filter=...'
 ```
 
-#### Simple filter
+#### Simple equality filter
 ```js
 const filter = { PropName: 1 };
 buildQuery({ filter })
@@ -111,7 +145,7 @@ buildQuery({ filter })
 => '?$filter=ItemsProp/any(i:i/SomeProp eq 1 and i/AnotherProp eq 2)'
 ```
 
-##### Specify logical operator (and, or)
+##### Explicit operator (`and`, `or`)
 ```js
 const filter = {
   ItemsProp: {
@@ -214,7 +248,7 @@ buildQuery({ expand })
 => "?$expand=Trips($filter=Name eq 'Trip in US')";
 ```
 
-#### Project expanded items (select only specific properties)
+#### Select only specific properties of expanded items
 ```js
 const expand = { Friends: { select: ['Name', 'Age'] } };
 buildQuery({ expand })
