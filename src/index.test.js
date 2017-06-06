@@ -205,7 +205,7 @@ describe('filter', () => {
   describe('functions', () => {
     it('should allow passing boolean functions as operators', () => {
       const filter = { Name: { contains: 'foo'} }
-      const expected = "?$filter=contains(Name, 'foo')"
+      const expected = "?$filter=contains(Name,'foo')"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });

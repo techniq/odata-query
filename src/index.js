@@ -123,7 +123,7 @@ function buildFilter(filters = {}, propPrefix = '') {
           } else {
             if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
               // Simple boolean functions (startswith, endswith, contains)
-              result.push(`${op}(${propName}, ${handleValue(value[op])})`) 
+              result.push(`${op}(${propName},${handleValue(value[op])})`) 
             } else {
               // Nested property
               result.push(`${propName}/${buildFilter(value)}`);

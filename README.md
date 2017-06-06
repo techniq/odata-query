@@ -169,7 +169,7 @@ Supported operators: `any`, `all`
 ```js
 const filter = { PropName: { contains: 'foo' } };
 buildQuery({ filter })
-=> "$filter=contains(PropName, 'foo')"
+=> "$filter=contains(PropName,'foo')"
 ```
 Supported operators: `startswith`, `endswith`, `contains`
 
