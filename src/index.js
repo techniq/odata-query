@@ -149,8 +149,7 @@ function handleValue(value) {
   if (typeof(value) === 'string') {
     return `'${value}'`
   } else if (value instanceof Date) {
-    const isoString = value.toISOString();
-    return isoString.split('.')[0] + "Z"; // strip microseconds
+    return value.toISOString();
   } else {
     // TODO: Figure out how best to specify types.  See: https://github.com/devnixs/ODataAngularResources/blob/master/src/odatavalue.js
     return value

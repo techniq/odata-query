@@ -103,7 +103,7 @@ describe('filter', () => {
       const startDate = new Date(Date.UTC(2017, 0, 1)) 
       const endDate = new Date(Date.UTC(2017, 2, 1)) 
       const filter = { DateProp: { ge: startDate, le: endDate } }
-      const expected = "?$filter=DateProp ge 2017-01-01T00:00:00Z and DateProp le 2017-03-01T00:00:00Z"
+      const expected = "?$filter=DateProp ge 2017-01-01T00:00:00.000Z and DateProp le 2017-03-01T00:00:00.000Z"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -196,7 +196,7 @@ describe('filter', () => {
 
     it('should handle a Date', () => {
       const filter = { DateProp: new Date(Date.UTC(2017, 2, 30, 7, 30)) };
-      const expected = "?$filter=DateProp eq 2017-03-30T07:30:00Z"
+      const expected = "?$filter=DateProp eq 2017-03-30T07:30:00.000Z"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
