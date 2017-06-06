@@ -126,7 +126,7 @@ function buildFilter(filters = {}, propPrefix = '') {
               result.push(`${op}(${propName},${handleValue(value[op])})`) 
             } else {
               // Nested property
-              result.push(`${propName}/${buildFilter(value)}`);
+              result.push(buildFilter(value, propName));
             }
           }
         })

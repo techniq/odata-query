@@ -223,6 +223,13 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+
+    it('should allow functions on nested properties', () => {
+      const filter = { Department: { Name: { contains: 'foo'} } }
+      const expected = "?$filter=contains(Department/Name,'foo')"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
   });
 })
 
