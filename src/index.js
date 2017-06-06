@@ -120,14 +120,12 @@ function buildFilter(filters = {}, propPrefix = '') {
           } else if (op === 'in') {
             // Convert `{ Prop: { in: [1,2,3] } }` to `Prop eq 1 or Prop eq 2 or Prop eq 3`
             result.push(value[op].map(v => `${propName} eq ${handleValue(v)}`).join(' or '))
+          } else if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
+            // Simple boolean functions (startswith, endswith, contains)
+            result.push(`${op}(${propName},${handleValue(value[op])})`) 
           } else {
-            if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
-              // Simple boolean functions (startswith, endswith, contains)
-              result.push(`${op}(${propName},${handleValue(value[op])})`) 
-            } else {
-              // Nested property
-              result.push(buildFilter(value, propName));
-            }
+            // Nested property
+            result.push(buildFilter(value, propName));
           }
         })
       } else if (value === undefined) {
