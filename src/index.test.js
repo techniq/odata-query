@@ -92,8 +92,36 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
+    it('should ignore implied logical operator with null filters', () => {
+      const filter = [null]
+      const expected = ""
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should ignore implied logical operator with empty object filters', () => {
+      const filter = [{}]
+      const expected = ""
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
     it('should ignore logical operators with no filters', () => {
       const filter = { and: [] }
+      const expected = ""
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should ignore null filters', () => {
+      const filter = { and: [null] }
+      const expected = ""
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should ignore empty object filters', () => {
+      const filter = { and: [{}] }
       const expected = ""
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);

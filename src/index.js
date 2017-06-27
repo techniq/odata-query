@@ -82,11 +82,14 @@ export default function ({ select, filter, groupBy, orderBy, top, skip, key, cou
 }
 
 function buildFilter(filters = {}, propPrefix = '') {
-  if (typeof(filters) === 'string') {
+  if (filters == null) {
+    // ignore `null` and `undefined` filters (useful for conditionally applied filters)
+    return
+  } else if (typeof(filters) === 'string') {
     // Use raw filter string
     return filters;
   } else if (Array.isArray(filters)) {
-    const builtFilters = filters.map(f => buildFilter(f, propPrefix));
+    const builtFilters = filters.map(f => buildFilter(f, propPrefix)).filter(f => f !== undefined);
     if (builtFilters.length) {
       return `(${builtFilters.join(` and `)})`
     }
@@ -100,7 +103,7 @@ function buildFilter(filters = {}, propPrefix = '') {
         result.push(`${propName} eq ${handleValue(value)}`) 
       } else if (Array.isArray(value)) {
         const op = filterKey;
-        const builtFilters = value.map(v => buildFilter(v, propPrefix));
+        const builtFilters = value.map(v => buildFilter(v, propPrefix)).filter(f => f !== undefined);
         if (builtFilters.length) {
           result.push(`(${builtFilters.join(` ${op} `)})`)
         }
@@ -128,8 +131,8 @@ function buildFilter(filters = {}, propPrefix = '') {
             result.push(buildFilter(value, propName));
           }
         })
-      } else if (value === undefined) {
-        // Ignore/omit filter
+      } else if (value == null) {
+        // Ignore/omit filter if `null` or `undefined`
       } else {
         throw new Error(`Unexpected value type: ${value}`)
       }
@@ -137,7 +140,12 @@ function buildFilter(filters = {}, propPrefix = '') {
       return result;
     }, [])
 
-    return filtersArray.join(' and ');
+    if (filtersArray.length) {
+      return filtersArray.join(' and ');
+    } else {
+      // return `undefined` for empty arrays
+      return
+    }
   } else {
     throw new Error(`Unexpected filters type: ${filters}`)
   }
