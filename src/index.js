@@ -94,7 +94,7 @@ function buildFilter(filters = {}, propPrefix = '') {
       const value = filters[filterKey];
       const propName = propPrefix ? `${propPrefix}/${filterKey}` : filterKey;
 
-      if (["number", "string", "boolean"].indexOf(typeof(value)) !== -1 || value instanceof Date) {
+      if (["number", "string", "boolean"].indexOf(typeof(value)) !== -1 || value instanceof Date || value === null) {
         // Simple key/value handled as equals operator
         result.push(`${propName} eq ${handleValue(value)}`) 
       } else if (Array.isArray(value)) {
@@ -127,8 +127,8 @@ function buildFilter(filters = {}, propPrefix = '') {
             result.push(buildFilter(value, propName));
           }
         })
-      } else if (value == null) {
-        // Ignore/omit filter if `null` or `undefined`
+      } else if (value === undefined) {
+        // Ignore/omit filter if value is `undefined`
       } else {
         throw new Error(`Unexpected value type: ${value}`)
       }

@@ -42,8 +42,15 @@ describe('filter', () => {
     });
 
     it('should ignore/omit filter if set to undefined', () => {
-      const filter = { SomeProp: 1, IgnoreProp: undefined };
-      const expected = '?$filter=SomeProp eq 1';
+      const filter = { IgnoreProp: undefined };
+      const expected = '';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should check for null (and not be omitted/ignored)', () => {
+      const filter = { SomeProp: null };
+      const expected = '?$filter=SomeProp eq null';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -92,6 +99,13 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
+    it('should ignore implied logical operator with undefined filters', () => {
+      const filter = [undefined]
+      const expected = ""
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
     it('should ignore implied logical operator with null filters', () => {
       const filter = [null]
       const expected = ""
@@ -108,6 +122,13 @@ describe('filter', () => {
 
     it('should ignore logical operators with no filters', () => {
       const filter = { and: [] }
+      const expected = ""
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should ignore undefined filters', () => {
+      const filter = { and: [undefined] }
       const expected = ""
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
