@@ -14,13 +14,16 @@ export default function ({ select, filter, groupBy, transform, orderBy, top, ski
 
   if (filter || count instanceof Object) {
     const builtFilter = buildFilter(count instanceof Object ? count : filter)
-    if (builtFilter) {
+    if (builtFilter !== undefined) {
       params.$filter = builtFilter
     }
   }
 
   if (transform) {
-    params.$apply = buildTransforms(transform)
+    const builtTransforms = buildTransforms(transform);
+    if (builtTransforms !== undefined) {
+      params.$apply = builtTransforms
+    }
   }
 
   if (top) {
@@ -136,12 +139,7 @@ function buildFilter(filters = {}, propPrefix = '') {
       return result;
     }, [])
 
-    if (filtersArray.length) {
-      return filtersArray.join(' and ');
-    } else {
-      // return `undefined` for empty arrays
-      return
-    }
+    return filtersArray.join(' and ') || undefined;
   } else {
     throw new Error(`Unexpected filters type: ${filters}`)
   }
@@ -208,17 +206,23 @@ function buildTransforms(transforms) {
   // Wrap single object an array for simplified processing
   const transformsArray = Array.isArray(transforms) ? transforms : [transforms];
 
-  return transformsArray.map(transform => {
-    return Object.keys(transform).map(transformKey => {
+  const transformsResult = transformsArray.reduce((result, transform) => {
+    Object.keys(transform).forEach(transformKey => {
       const transformValue = transform[transformKey];
       switch(transformKey) {
         case 'aggregate':
-          return `aggregate(${buildAggregate(transformValue)})`
+          result.push(`aggregate(${buildAggregate(transformValue)})`)
+          break;
         case 'filter':
-          return `filter(${buildFilter(transformValue)})`
+          const builtFilter = buildFilter(transformValue);
+          if (builtFilter !== undefined) {
+            result.push(`filter(${buildFilter(transformValue)})`)
+          }
+          break;
         case 'groupby': // support both cases
         case 'groupBy':
-          return `groupby(${buildGroupBy(transformValue)})`
+          result.push(`groupby(${buildGroupBy(transformValue)})`)
+          break;
         default:
           // TODO: support as many of the following:
           //   topcount, topsum, toppercent,
@@ -226,8 +230,12 @@ function buildTransforms(transforms) {
           //   identity, concat, expand, search, compute, isdefined
           throw new Error(`Unsupported transform: '${transformKey}'`)
       }
-    }).join('/')
-  }).join('/')
+    })
+
+    return result;
+  }, [])
+
+  return transformsResult.join('/') || undefined;
 }
 
 function buildAggregate(aggregate) {

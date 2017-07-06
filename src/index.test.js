@@ -120,28 +120,28 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should ignore logical operators with no filters', () => {
+    it('should omit/ignore logical operators with no filters', () => {
       const filter = { and: [] }
       const expected = ""
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-    it('should ignore undefined filters', () => {
+    it('should omit/ignore undefined filters', () => {
       const filter = { and: [undefined] }
       const expected = ""
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-    it('should ignore null filters', () => {
+    it('should omit/ignore null filters', () => {
       const filter = { and: [null] }
       const expected = ""
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-    it('should ignore empty object filters', () => {
+    it('should omit/ignore empty object filters', () => {
       const filter = { and: [{}] }
       const expected = ""
       const actual = buildQuery({ filter });
@@ -341,6 +341,27 @@ describe('transform', () => {
       }
     }];
     const expected = '?$apply=filter(PropName eq 1)';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should omit/ignore undefined filters', () => {
+    const transform = { filter: undefined };
+    const expected = '' 
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should omit/ignore null filters', () => {
+    const transform = { filter: null };
+    const expected = '';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should omit/ignore empty object filters', () => {
+    const transform = { filter: {} };
+    const expected = '';
     const actual = buildQuery({ transform });
     expect(actual).toEqual(expected);
   });
