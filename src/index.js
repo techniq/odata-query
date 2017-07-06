@@ -4,9 +4,7 @@ const COLLECTION_OPERATORS = ['any', 'all'];
 const BOOLEAN_FUNCTIONS = ['startswith', 'endswith', 'contains'];
 const SUPPORTED_EXPAND_PROPERTIES = ['expand', 'select', 'top', 'orderby', 'filter'];
 
-export default function ({ select, filter, groupBy, orderBy, top, skip, key, count, expand, action, func } = {}) {
-  const builtFilter = buildFilter(count instanceof Object ? count : filter)
-
+export default function ({ select, filter, groupBy, transform, orderBy, top, skip, key, count, expand, action, func } = {}) {
   let path = '';
   const params = {};
 
@@ -14,17 +12,15 @@ export default function ({ select, filter, groupBy, orderBy, top, skip, key, cou
     params.$select = select
   }
 
-  if (groupBy) {
-    const applyParam = [];
-
+  if (filter || count instanceof Object) {
+    const builtFilter = buildFilter(count instanceof Object ? count : filter)
     if (builtFilter) {
-      applyParam.push(`filter(${builtFilter})`)
+      params.$filter = builtFilter
     }
-    // TODO: Support `groupBy` subproperties using '/' or '.'
-    applyParam.push(`groupby((${groupBy}),aggregate(Id with countdistinct as Total))`)
-    params.$apply = applyParam.join('/');
-  } else if (builtFilter) {
-    params.$filter = builtFilter
+  }
+
+  if (transform) {
+    params.$apply = buildTransforms(transform)
   }
 
   if (top) {
@@ -206,6 +202,67 @@ function buildExpand(expands) {
       .join(',')
     }
   }
+}
+
+function buildTransforms(transforms) {
+  // Wrap single object an array for simplified processing
+  const transformsArray = Array.isArray(transforms) ? transforms : [transforms];
+
+  return transformsArray.map(transform => {
+    return Object.keys(transform).map(transformKey => {
+      const transformValue = transform[transformKey];
+      switch(transformKey) {
+        case 'aggregate':
+          return `aggregate(${buildAggregate(transformValue)})`
+        case 'filter':
+          return `filter(${buildFilter(transformValue)})`
+        case 'groupby': // support both cases
+        case 'groupBy':
+          return `groupby(${buildGroupBy(transformValue)})`
+        default:
+          // TODO: support as many of the following:
+          //   topcount, topsum, toppercent,
+          //   bottomsum, bottomcount, bottompercent,
+          //   identity, concat, expand, search, compute, isdefined
+          throw new Error(`Unsupported transform: '${transformKey}'`)
+      }
+    }).join('/')
+  }).join('/')
+}
+
+function buildAggregate(aggregate) {
+  // Wrap single object an array for simplified processing
+  const aggregateArray = Array.isArray(aggregate) ? aggregate : [aggregate];
+
+  return aggregateArray.map(aggregateItem => {
+    return Object.keys(aggregateItem).map(aggregateKey => {
+      const aggregateValue = aggregateItem[aggregateKey];
+      
+      // TODO: Are these always required?  Can/should we default them if so? 
+      if (aggregateValue.with === undefined) {
+        throw new Error(`'with' property required for '${aggregateKey}'`)
+      }
+      if (aggregateValue.as === undefined) {
+        throw new Error(`'as' property required for '${aggregateKey}'`)
+      }
+
+      return `${aggregateKey} with ${aggregateValue.with} as ${aggregateValue.as}` 
+    })
+  }).join(',')
+}
+
+function buildGroupBy(groupBy) {
+  if (groupBy.properties === undefined) {
+    throw new Error(`'properties' property required for groupBy:'${aggregateKey}'`)
+  }
+
+  let result = `(${groupBy.properties.join(',')})`;
+
+  if (groupBy.transform) {
+    result += `,${buildTransforms(groupBy.transform)}`;
+  }
+
+  return result;
 }
 
 function buildOrderBy(orderBy) {

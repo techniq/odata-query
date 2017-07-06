@@ -261,34 +261,156 @@ describe('filter', () => {
   });
 })
 
-describe('groupBy', () => {
-  it('should allow passing since property as string', () => {
-    const groupBy = 'SomeProp';
+describe('transform', () => {
+  it('simple aggregation as object', () => {
+    const transform = {
+      aggregate: {
+        Amount: {
+          with: 'sum',
+          as: 'Total'
+        }
+      }
+    };
+    const expected = '?$apply=aggregate(Amount with sum as Total)';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('multiple aggregations with different properties as object', () => {
+    const transform = [{
+      aggregate: {
+        Amount: {
+          with: 'sum',
+          as: 'Total'
+        },
+        Id: {
+          with: 'countdistinct',
+          as: 'Count'
+        }
+      }
+    }];
+    const expected = '?$apply=aggregate(Amount with sum as Total,Id with countdistinct as Count)';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+  
+  it('multiple aggregations with same property as array', () => {
+    const transform = [{
+      aggregate: [{
+        Amount: {
+          with: 'sum',
+          as: 'Total'
+        }
+      },{
+        Amount: {
+          with: 'max',
+          as: 'Max'
+        }
+      }]
+    }];
+    const expected = '?$apply=aggregate(Amount with sum as Total,Amount with max as Max)';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('simple filter', () => {
+    const transform = [{
+      filter: {
+        PropName: 1
+      }
+    }];
+    const expected = '?$apply=filter(PropName eq 1)';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('simple groupby', () => {
+    const transform = [{
+      groupBy: {
+        properties: ['SomeProp'],
+      }
+    }]
+    const expected = '?$apply=groupby((SomeProp))';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('groupby with multiple columns', () => {
+    const transform = [{
+      groupBy: {
+        properties: ['SomeProp', 'AnotherProp'],
+      }
+    }]
+    const expected = '?$apply=groupby((SomeProp,AnotherProp))';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('groupby with aggregation', () => {
+    const transform = [{
+      groupBy: {
+        properties: ['SomeProp'],
+        transform: [{
+          aggregate: {
+            Id: {
+              with: 'countdistinct',
+              as: 'Total'
+            }
+          }
+        }]
+      }}
+    ]
     const expected = '?$apply=groupby((SomeProp),aggregate(Id with countdistinct as Total))';
-    const actual = buildQuery({ groupBy });
+    const actual = buildQuery({ transform });
     expect(actual).toEqual(expected);
   });
 
-  it('should allow filtering', () => {
-    const groupBy = 'SomeProp';
-    const filter = { PropName: 1 };
+  it('group by with filter before as object', () => {
+    const transform = {
+      filter: {
+        PropName: 1
+      },
+      groupBy: {
+        properties: ['SomeProp'],
+        transform: {
+          aggregate: {
+            Id: {
+              with: 'countdistinct',
+              as: 'Total'
+            }
+          }
+        }
+      }
+    }
     const expected = '?$apply=filter(PropName eq 1)/groupby((SomeProp),aggregate(Id with countdistinct as Total))';
-    const actual = buildQuery({ filter, groupBy });
+    const actual = buildQuery({ transform });
     expect(actual).toEqual(expected);
   });
-
-  it('should allow passing multiple properites as an array', () => {
-    const groupBy = ['FirstProp', 'SecondProp'];
-    const expected = '?$apply=groupby((FirstProp,SecondProp),aggregate(Id with countdistinct as Total))';
-    const actual = buildQuery({ groupBy });
-    expect(actual).toEqual(expected);
-  });
-
-  it('should allow ordering', () => {
-    const groupBy = 'SomeProp';
-    const orderBy = 'SomeProp'
-    const expected = '?$apply=groupby((SomeProp),aggregate(Id with countdistinct as Total))&$orderby=SomeProp';
-    const actual = buildQuery({ groupBy, orderBy });
+  
+  it('group by with filter before and after as array', () => {
+    const transform = [{
+      filter: {
+        PropName: 1
+      }
+    },{
+      groupBy: {
+        properties: ['SomeProp'],
+        transform: [{
+          aggregate: {
+            Id: {
+              with: 'countdistinct',
+              as: 'Total'
+            }
+          }
+        }]
+      }
+    },{
+      filter: {
+        Total: { ge: 5 }
+      }
+    }]
+    const expected = '?$apply=filter(PropName eq 1)/groupby((SomeProp),aggregate(Id with countdistinct as Total))/filter(Total ge 5)';
+    const actual = buildQuery({ transform });
     expect(actual).toEqual(expected);
   });
 })
@@ -415,10 +537,25 @@ describe('count', () => {
   });
   
   it('should allow groupby when querying for only count', () => {
-    const count = { PropName: 1 };
-    const groupBy = 'SomeProp';
+    const count = {};
+    const transform = [{
+      filter: {
+        PropName: 1
+      },
+      groupBy: {
+        properties: ['SomeProp'],
+        transform: [{
+          aggregate: {
+            Id: {
+              with: 'countdistinct',
+              as: 'Total'
+            }
+          }
+        }]
+      }}
+    ]
     const expected = '/$count?$apply=filter(PropName eq 1)/groupby((SomeProp),aggregate(Id with countdistinct as Total))';
-    const actual = buildQuery({ count, groupBy });
+    const actual = buildQuery({ count, transform });
     expect(actual).toEqual(expected);
   });
 })

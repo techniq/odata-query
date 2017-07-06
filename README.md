@@ -55,7 +55,7 @@ See [tests](src/index.test.js) for examples as well
 - [Counting](#counting)
 - [Actions](#actions)
 - [Functions](#functions-1)
-- [Grouping / aggregation](#grouping--aggregation)
+- [Transforms](#transforms)
   
 ### Filtering
 ```js
@@ -316,8 +316,9 @@ buildQuery({ key })
 Include count inline with result
 ```js
 const count = true;
-buildQuery({ count })
-=> '?$count=true'
+const filter = { PropName: 1}
+buildQuery({ count, filter })
+=> '?$count=true&$filter=PropName eq 1'
 ```
 
 Or you can return only the count by passing a filter object to `count` (or empty object to count all)
@@ -376,5 +377,84 @@ buildQuery({ func })
 ```
 
 
-### Grouping / aggregation
-Coming soon
+### Transforms
+Transforms can be passed as an object or an array (useful when applying the same transform more than once, such as `filter`)
+
+Aggregations
+```js
+const transform = {
+  aggregate: {
+    Amount: {
+      with: 'sum',
+      as: 'Total'
+    }
+  }
+};
+buildQuery({ transform });
+=> '?$apply=aggregate(Amount with sum as Total)';
+```
+Supported aggregations: `sum`, `min`, `max`, `average`, `countdistinct`
+
+Group by (simple)
+```js
+const transform = [{
+  groupBy: {
+    properties: ['SomeProp'],
+  }
+}]
+buildQuery({ transform });
+=> '?$apply=groupby((SomeProp))';
+```
+
+Group by with aggregation
+```js
+const transform = {
+  groupBy: {
+    properties: ['SomeProp'],
+    transform: {
+      aggregate: {
+        Id: {
+          with: 'countdistinct',
+          as: 'Total'
+        }
+      }
+    }
+  }
+}
+buildQuery({ transform });
+=> '?$apply=groupby((SomeProp),aggregate(Id with countdistinct as Total))';
+```
+
+Group by with filtering before and after
+```js
+const transform = [{
+  filter: {
+    PropName: 1
+  }
+},{
+  groupBy: {
+    properties: ['SomeProp'],
+    transform: [{
+      aggregate: {
+        Id: {
+          with: 'countdistinct',
+          as: 'Total'
+        }
+      }
+    }]
+  }
+},{
+  filter: {
+    Total: { ge: 5 }
+  }
+}]
+buildQuery({ transform });
+=> '?$apply=filter(PropName eq 1)/groupby((SomeProp),aggregate(Id with countdistinct as Total))/filter(Total ge 5)';
+```
+
+Supported transforms: `aggregate`, `groupby`, `filter`.  Additional transforms may be added later
+
+## OData specs
+- [OData Version 4.0. Part 1: Protocol Plus Errata 03](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part1-protocol.html)
+- [OData Version 4.0. Part 2: URL Conventions Plus Errata 03](http://docs.oasis-open.org/odata/odata/v4.0/odata-v4.0-part2-url-conventions.html)
+- [OData Extension for Data Aggregation Version 4.0](http://docs.oasis-open.org/odata/odata-data-aggregation-ext/v4.0/odata-data-aggregation-ext-v4.0.html)
