@@ -147,7 +147,7 @@ function buildFilter(filters = {}, propPrefix = '') {
 
 function handleValue(value) {
   if (typeof(value) === 'string') {
-    return `'${value}'`
+    return `'${value.replace("'", "''")}'`
   } else if (value instanceof Date) {
     return value.toISOString();
   } else {
