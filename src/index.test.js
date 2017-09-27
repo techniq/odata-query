@@ -236,6 +236,13 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
+    it("should escape the `'` character in strings", () => {
+      const filter = { StringProp: "O'Dimm" };
+      const expected = "?$filter=StringProp eq 'O''Dimm'"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
     it('should handle a boolean', () => {
       const filter = { BooleanProp: true };
       const expected = "?$filter=BooleanProp eq true"
