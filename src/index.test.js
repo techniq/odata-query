@@ -29,7 +29,7 @@ describe('filter', () => {
 
     it('should allow passing filter as an array of objects and strings', () => {
       const filter = [{ SomeProp: 1 }, { AnotherProp: 2 }, "startswith(Name, 'R')"];
-      const expected = "?$filter=(SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, 'R'))"
+      const expected = "?$filter=(SomeProp eq 1) and (AnotherProp eq 2) and (startswith(Name, 'R'))"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -173,7 +173,7 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should handle collection operator with array of objects as implied `and', () => {
+    it('should handle collection operator with array of objects as implied `and`', () => {
       const filter = {
         Tasks: {
           any: [
@@ -182,7 +182,7 @@ describe('filter', () => {
           ]
         }
       }
-      const expected = "?$filter=Tasks/any(t:(t/AssignedGroupId eq 1234 and t/StatusId eq 300))"
+      const expected = "?$filter=Tasks/any(t:(t/AssignedGroupId eq 1234) and (t/StatusId eq 300))"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });

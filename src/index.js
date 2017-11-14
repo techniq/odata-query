@@ -90,7 +90,7 @@ function buildFilter(filters = {}, propPrefix = '') {
   } else if (Array.isArray(filters)) {
     const builtFilters = filters.map(f => buildFilter(f, propPrefix)).filter(f => f !== undefined);
     if (builtFilters.length) {
-      return `(${builtFilters.join(` and `)})`
+      return `${builtFilters.map(f => `(${f})`).join(` and `)}`
     }
   } else if (typeof(filters) === 'object') {
     const filtersArray = Object.keys(filters).reduce((result, filterKey) => {
