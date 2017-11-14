@@ -35,8 +35,15 @@ describe('filter', () => {
     });
 
     it('should convert "in" operator to "or" statement', () => {
-      const filter = { SomeProp: {'in': [1, 2, 3] } };
+      const filter = { SomeProp: { in: [1, 2, 3] } };
       const expected = '?$filter=SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3'
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should convert "in" operator to "or" statement and wrap in parens when using an array', () => {
+      const filter = [{ SomeProp: { in: [1, 2, 3] } }, { AnotherProp: 4 }];
+      const expected = '?$filter=(SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3) and (AnotherProp eq 4)'
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
