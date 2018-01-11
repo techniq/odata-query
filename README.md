@@ -39,6 +39,7 @@ See [tests](src/index.test.js) for examples as well
     - [Functions returning non-boolean values (string, int) with parameters](#functions-returning-non-boolean-values-string-int-with-parameters)
   - [Strings](#strings)
   - [Data types](#data-types)
+  - [Search](#search)
 - [Selecting](#selecting)
 - [Ordering](#ordering)
 - [Expanding](#expanding)
@@ -204,6 +205,13 @@ buildQuery({ filter })
 
 #### Data types
 Coming soon
+
+#### Search
+```js
+const search = 'blue OR green';
+buildQuery({ search });
+=> '?$search=blue OR green';
+```
 
 ### Selecting
 ```js

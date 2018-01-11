@@ -4,7 +4,7 @@ const COLLECTION_OPERATORS = ['any', 'all'];
 const BOOLEAN_FUNCTIONS = ['startswith', 'endswith', 'contains'];
 const SUPPORTED_EXPAND_PROPERTIES = ['expand', 'select', 'top', 'orderby', 'filter'];
 
-export default function ({ select, filter, groupBy, transform, orderBy, top, skip, key, count, expand, action, func } = {}) {
+export default function ({ select, filter, search, groupBy, transform, orderBy, top, skip, key, count, expand, action, func } = {}) {
   let path = '';
   const params = {};
 
@@ -17,6 +17,10 @@ export default function ({ select, filter, groupBy, transform, orderBy, top, ski
     if (builtFilter !== undefined) {
       params.$filter = builtFilter
     }
+  }
+
+  if (search) {
+    params.$search = search
   }
 
   if (transform) {

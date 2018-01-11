@@ -296,6 +296,15 @@ describe('filter', () => {
   });
 })
 
+describe('search', () => {
+  it('should handle basic search string', () => {
+    const search = 'blue OR green';
+    const expected = '?$search=blue OR green';
+    const actual = buildQuery({ search });
+    expect(actual).toEqual(expected);
+  });
+});
+
 describe('transform', () => {
   it('simple aggregation as object', () => {
     const transform = {
