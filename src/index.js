@@ -239,7 +239,7 @@ function buildTransforms(transforms) {
 }
 
 function buildAggregate(aggregate) {
-  // Wrap single object an array for simplified processing
+  // Wrap single object in an array for simplified processing
   const aggregateArray = Array.isArray(aggregate) ? aggregate : [aggregate];
 
   return aggregateArray.map(aggregateItem => {
