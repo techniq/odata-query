@@ -217,12 +217,26 @@ describe('filter', () => {
             CreatedBy: {
               Name: 'Sean Lynch'
             },
-            // 'CreatedBy/Name': 'Sean Lynch',
             StatusId: 300
           }]
         }
       }
       const expected = "?$filter=Tasks/any(t:(t/CreatedBy/Name eq 'Sean Lynch' and t/StatusId eq 300))"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle collection operator with a function', () => {
+      const filter = {
+        Tasks: {
+          any: {
+            "toupper(searchProp)": {
+              contains: 'foo'
+            }
+          }
+        }
+      }
+      const expected = "?$filter=Tasks/any(t:contains(toupper(t/searchProp),'foo'))"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });

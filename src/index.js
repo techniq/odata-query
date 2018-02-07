@@ -4,6 +4,8 @@ const COLLECTION_OPERATORS = ['any', 'all'];
 const BOOLEAN_FUNCTIONS = ['startswith', 'endswith', 'contains'];
 const SUPPORTED_EXPAND_PROPERTIES = ['expand', 'select', 'top', 'orderby', 'filter'];
 
+const FUNCTION_REGEX = /\((.*)\)/;
+
 export default function ({ select, filter, search, groupBy, transform, orderBy, top, skip, key, count, expand, action, func } = {}) {
   let path = '';
   const params = {};
@@ -99,7 +101,9 @@ function buildFilter(filters = {}, propPrefix = '') {
   } else if (typeof(filters) === 'object') {
     const filtersArray = Object.keys(filters).reduce((result, filterKey) => {
       const value = filters[filterKey];
-      const propName = propPrefix ? `${propPrefix}/${filterKey}` : filterKey;
+      const propName = propPrefix ? 
+        (FUNCTION_REGEX.test(filterKey) ? filterKey.replace(FUNCTION_REGEX, `(${propPrefix}/$1)`) : `${propPrefix}/${filterKey}`)
+        : filterKey;
 
       if (["number", "string", "boolean"].indexOf(typeof(value)) !== -1 || value instanceof Date || value === null) {
         // Simple key/value handled as equals operator
