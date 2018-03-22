@@ -126,7 +126,12 @@ function buildFilter(filters = {}, propPrefix = '') {
             result.push(`${propName} ${op} ${handleValue(value[op])}`) 
           } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
             const lambaParameter = propName[0].toLowerCase();
-            result.push(`${propName}/${op}(${lambaParameter}:${buildFilter(value[op], lambaParameter)})`) 
+            const filter = buildFilter(value[op], lambaParameter);
+            
+            if (filter !== undefined) {
+              // Do not apply collection filter if undefined (ex. ignore `Foo: { any: {} }`)
+              result.push(`${propName}/${op}(${lambaParameter}:${filter})`) 
+            }
           } else if (op === 'in') {
             // Convert `{ Prop: { in: [1,2,3] } }` to `Prop eq 1 or Prop eq 2 or Prop eq 3`
             result.push(value[op].map(v => `${propName} eq ${handleValue(v)}`).join(' or '))

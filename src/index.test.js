@@ -166,6 +166,39 @@ describe('filter', () => {
   })
 
   describe('collection operators', () => {
+    it('should ignore collection operator with an empty object of filters', () => {
+      const filter = {
+        Tasks: {
+          any: {}
+        }
+      }
+      const expected = ""
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should ignore collection operator with an empty array of filters', () => {
+      const filter = {
+        Tasks: {
+          any: [] 
+        }
+      }
+      const expected = ""
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should ignore collection operator with null filters', () => {
+      const filter = {
+        Tasks: {
+          any: null
+        }
+      }
+      const expected = ""
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
     it('should handle collection operator with object as implied `and`', () => {
       const filter = {
         Tasks: {
