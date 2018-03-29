@@ -36,14 +36,21 @@ describe('filter', () => {
 
     it('should convert "in" operator to "or" statement', () => {
       const filter = { SomeProp: { in: [1, 2, 3] } };
-      const expected = '?$filter=SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3'
+      const expected = '?$filter=(SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3)'
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
     it('should convert "in" operator to "or" statement and wrap in parens when using an array', () => {
       const filter = [{ SomeProp: { in: [1, 2, 3] } }, { AnotherProp: 4 }];
-      const expected = '?$filter=(SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3) and (AnotherProp eq 4)'
+      const expected = '?$filter=((SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3)) and (AnotherProp eq 4)'
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should convert "in" operator to "or" statement and wrap in parens', () => {
+      const filter = { SomeProp: { in: [1, 2, 3] } };
+      const expected = '?$filter=(SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3)'
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -77,7 +84,7 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
-    
+
     it('should handle simple logical operators (and, or, etc) as an object (no parens)', () => {
       const filter = { and: { SomeProp: 1 , AnotherProp: 2 } }
       const expected = "?$filter=SomeProp eq 1 and AnotherProp eq 2"
@@ -98,7 +105,7 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
-    
+
     it('should ignore implied logical operator with no filters', () => {
       const filter = []
       const expected = ""
@@ -156,8 +163,8 @@ describe('filter', () => {
     });
 
     it('should handle implied logical operator on a single property', () => {
-      const startDate = new Date(Date.UTC(2017, 0, 1)) 
-      const endDate = new Date(Date.UTC(2017, 2, 1)) 
+      const startDate = new Date(Date.UTC(2017, 0, 1))
+      const endDate = new Date(Date.UTC(2017, 2, 1))
       const filter = { DateProp: { ge: startDate, le: endDate } }
       const expected = "?$filter=DateProp ge 2017-01-01T00:00:00.000Z and DateProp le 2017-03-01T00:00:00.000Z"
       const actual = buildQuery({ filter });
@@ -180,7 +187,7 @@ describe('filter', () => {
     it('should ignore collection operator with an empty array of filters', () => {
       const filter = {
         Tasks: {
-          any: [] 
+          any: []
         }
       }
       const expected = ""
@@ -242,7 +249,7 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
-    
+
     it('should handle collection operator with nested property', () => {
       const filter = {
         Tasks: {
@@ -384,7 +391,7 @@ describe('transform', () => {
     const actual = buildQuery({ transform });
     expect(actual).toEqual(expected);
   });
-  
+
   it('multiple aggregations with same property as array', () => {
     const transform = [{
       aggregate: [{
@@ -417,7 +424,7 @@ describe('transform', () => {
 
   it('should omit/ignore undefined filters', () => {
     const transform = { filter: undefined };
-    const expected = '' 
+    const expected = ''
     const actual = buildQuery({ transform });
     expect(actual).toEqual(expected);
   });
@@ -498,7 +505,7 @@ describe('transform', () => {
     const actual = buildQuery({ transform });
     expect(actual).toEqual(expected);
   });
-  
+
   it('group by with filter before and after as array', () => {
     const transform = [{
       filter: {
@@ -559,7 +566,7 @@ describe('orderBy', () => {
     const actual = buildQuery({ orderBy });
     expect(actual).toEqual(expected);
   });
-  
+
   it('should support ordering a nested property within an expand', () => {
     const query = {
       expand: {
@@ -647,7 +654,7 @@ describe('count', () => {
     const actual = buildQuery({ count });
     expect(actual).toEqual(expected);
   });
-  
+
   it('should allow groupby when querying for only count', () => {
     const count = {};
     const transform = [{
@@ -733,7 +740,7 @@ describe('expand', () => {
     const actual = buildQuery({ expand });
     expect(actual).toEqual(expected);
   });
-  
+
   it('should allow multiple expands with objects', () => {
     const expand = { Friends: {}, One: { orderBy: 'Two' } };
     const expected = '?$expand=Friends,One($orderby=Two)';
