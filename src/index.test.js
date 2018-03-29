@@ -55,6 +55,13 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
+    it('should convert "in" operator to "or" statement and wrap in parens', () => {
+      const filter = { SomeProp: 1, AnotherProp: { in: [2, 3,4 ], contains: 5 }};
+      const expected = '?$filter=SomeProp eq 1 and (AnotherProp eq 2 or AnotherProp eq 3 or AnotherProp eq 4) and contains(AnotherProp,5)'
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
     it('should ignore/omit filter if set to undefined', () => {
       const filter = { IgnoreProp: undefined };
       const expected = '';
