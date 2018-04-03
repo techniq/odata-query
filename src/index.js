@@ -101,13 +101,13 @@ function buildFilter(filters = {}, propPrefix = '') {
   } else if (typeof(filters) === 'object') {
     const filtersArray = Object.keys(filters).reduce((result, filterKey) => {
       const value = filters[filterKey];
-      const propName = propPrefix ? 
+      const propName = propPrefix ?
         (FUNCTION_REGEX.test(filterKey) ? filterKey.replace(FUNCTION_REGEX, `(${propPrefix}/$1)`) : `${propPrefix}/${filterKey}`)
         : filterKey;
 
       if (["number", "string", "boolean"].indexOf(typeof(value)) !== -1 || value instanceof Date || value === null) {
         // Simple key/value handled as equals operator
-        result.push(`${propName} eq ${handleValue(value)}`) 
+        result.push(`${propName} eq ${handleValue(value)}`)
       } else if (Array.isArray(value)) {
         const op = filterKey;
         const builtFilters = value.map(v => buildFilter(v, propPrefix)).filter(f => f !== undefined);
@@ -123,21 +123,21 @@ function buildFilter(filters = {}, propPrefix = '') {
         const operators = Object.keys(value);
         operators.forEach(op => {
           if ([...COMPARISON_OPERATORS, ...LOGICAL_OPERATORS].indexOf(op) !== -1) {
-            result.push(`${propName} ${op} ${handleValue(value[op])}`) 
+            result.push(`${propName} ${op} ${handleValue(value[op])}`)
           } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
             const lambaParameter = propName[0].toLowerCase();
             const filter = buildFilter(value[op], lambaParameter);
-            
+
             if (filter !== undefined) {
               // Do not apply collection filter if undefined (ex. ignore `Foo: { any: {} }`)
-              result.push(`${propName}/${op}(${lambaParameter}:${filter})`) 
+              result.push(`${propName}/${op}(${lambaParameter}:${filter})`)
             }
           } else if (op === 'in') {
-            // Convert `{ Prop: { in: [1,2,3] } }` to `Prop eq 1 or Prop eq 2 or Prop eq 3`
-            result.push(value[op].map(v => `${propName} eq ${handleValue(v)}`).join(' or '))
+            // Convert `{ Prop: { in: [1,2,3] } }` to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
+            result.push('(' + value[op].map(v => `${propName} eq ${handleValue(v)}`).join(' or ') + ')')
           } else if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
             // Simple boolean functions (startswith, endswith, contains)
-            result.push(`${op}(${propName},${handleValue(value[op])})`) 
+            result.push(`${op}(${propName},${handleValue(value[op])})`)
           } else {
             // Nested property
             result.push(buildFilter(value, propName));
@@ -258,8 +258,8 @@ function buildAggregate(aggregate) {
   return aggregateArray.map(aggregateItem => {
     return Object.keys(aggregateItem).map(aggregateKey => {
       const aggregateValue = aggregateItem[aggregateKey];
-      
-      // TODO: Are these always required?  Can/should we default them if so? 
+
+      // TODO: Are these always required?  Can/should we default them if so?
       if (aggregateValue.with === undefined) {
         throw new Error(`'with' property required for '${aggregateKey}'`)
       }
@@ -267,7 +267,7 @@ function buildAggregate(aggregate) {
         throw new Error(`'as' property required for '${aggregateKey}'`)
       }
 
-      return `${aggregateKey} with ${aggregateValue.with} as ${aggregateValue.as}` 
+      return `${aggregateKey} with ${aggregateValue.with} as ${aggregateValue.as}`
     })
   }).join(',')
 }
