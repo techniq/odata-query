@@ -234,6 +234,48 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
+    it('should handle collection operator with nested collection operator of objects', () => {
+      const filter = {
+        Tasks: {
+          any: {
+            SubTasks: { 
+              any: [ 
+                { AssignedGroupId: 1234 }, 
+                { StatusId: 300 } 
+              ]
+            }
+          }
+        }
+      }
+      const expected = "?$filter=Tasks/any(t:t/SubTasks/any(s:(s/AssignedGroupId eq 1234) and (s/StatusId eq 300)))"
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle collection operator with nested collection operator of objects', () => {
+      const filter = {
+        Tasks: {
+          any: {
+            SubTasks: { 
+              any: { 
+                AssignedGroupId: 1234, 
+                StatusId: 300 
+              } },
+            OtherTasks: {
+              all: {
+                StatusId: 122,
+                AssignedGroupId: 2345
+              }
+            } 
+          }
+        }
+      }
+      const expected = "?$filter=Tasks/any(t:t/SubTasks/any(s:s/AssignedGroupId eq 1234 and s/StatusId eq 300) and t/OtherTasks/all(o:o/StatusId eq 122 and o/AssignedGroupId eq 2345))"
+      const actual = buildQuery({ filter });
+      console.log(actual);
+      expect(actual).toEqual(expected);
+    });
+
     it('should handle collection operator with object specifying operator', () => {
       const filter = {
         Tasks: {
