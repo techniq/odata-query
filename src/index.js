@@ -162,7 +162,7 @@ function handleValue(value) {
   if (typeof(value) === 'string') {
     return `'${value.replace("'", "''")}'`
   } else if (value instanceof Date) {
-    return value.toISOString();
+    return "datetime'" + value.getFullYear() + "-" + ("0" + (value.getMonth() + 1)).slice(-2) + "-" + ("0" + value.getDate()).slice(-2) + "T" + ("0" + value.getHours()).slice(-2) + ":" + ("0" + value.getMinutes()).slice(-2)+':'+("0" + value.getSeconds()).slice(-2) + "'";
   } else {
     // TODO: Figure out how best to specify types.  See: https://github.com/devnixs/ODataAngularResources/blob/master/src/odatavalue.js
     return value
