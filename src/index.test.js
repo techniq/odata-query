@@ -42,7 +42,7 @@ describe('filter', () => {
     });
 
     it('should convert "in" operator to "or" statement and wrap in parens', () => {
-      const filter = {SomeNames: {contains: "Bob", in: ["Peter Newman", "Bob Ross", "Bobby Parker", "Mike Bobson"]}};
+      const filter = { SomeNames: { contains: "Bob", in: ["Peter Newman", "Bob Ross", "Bobby Parker", "Mike Bobson"] } };
       const expected = "?$filter=contains(SomeNames,'Bob') and (SomeNames eq 'Peter Newman' or SomeNames eq 'Bob Ross' or SomeNames eq 'Bobby Parker' or SomeNames eq 'Mike Bobson')"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
@@ -70,7 +70,7 @@ describe('filter', () => {
     });
 
     it('should support nested properties', () => {
-      const filter = { SomeProp: { Value: 1 }};
+      const filter = { SomeProp: { Value: 1 } };
       const expected = '?$filter=SomeProp/Value eq 1';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
@@ -86,7 +86,7 @@ describe('filter', () => {
     });
 
     it('should handle simple logical operators (and, or, etc) as an object (no parens)', () => {
-      const filter = { and: { SomeProp: 1 , AnotherProp: 2 } }
+      const filter = { and: { SomeProp: 1, AnotherProp: 2 } }
       const expected = "?$filter=SomeProp eq 1 and AnotherProp eq 2"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
@@ -234,14 +234,14 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should handle collection operator with nested collection operator of objects', () => {
+    it('should handle collection operator with nested collection operator', () => {
       const filter = {
         Tasks: {
           any: {
-            SubTasks: { 
-              any: [ 
-                { AssignedGroupId: 1234 }, 
-                { StatusId: 300 } 
+            SubTasks: {
+              any: [
+                { AssignedGroupId: 1234 },
+                { StatusId: 300 }
               ]
             }
           }
@@ -252,27 +252,27 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should handle collection operator with nested collection operator of objects', () => {
+    it('should handle collection operator with nested collection operators', () => {
       const filter = {
         Tasks: {
           any: {
-            SubTasks: { 
-              any: { 
-                AssignedGroupId: 1234, 
-                StatusId: 300 
-              } },
+            SubTasks: {
+              any: {
+                AssignedGroupId: 1234,
+                StatusId: 300
+              }
+            },
             OtherTasks: {
               all: {
                 StatusId: 122,
                 AssignedGroupId: 2345
               }
-            } 
+            }
           }
         }
       }
       const expected = "?$filter=Tasks/any(t:t/SubTasks/any(s:s/AssignedGroupId eq 1234 and s/StatusId eq 300) and t/OtherTasks/all(o:o/StatusId eq 122 and o/AssignedGroupId eq 2345))"
       const actual = buildQuery({ filter });
-      console.log(actual);
       expect(actual).toEqual(expected);
     });
 
@@ -363,7 +363,7 @@ describe('filter', () => {
 
   describe('functions', () => {
     it('should allow passing boolean functions as operators', () => {
-      const filter = { Name: { contains: 'foo'} }
+      const filter = { Name: { contains: 'foo' } }
       const expected = "?$filter=contains(Name,'foo')"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
@@ -384,7 +384,7 @@ describe('filter', () => {
     });
 
     it('should allow functions on nested properties', () => {
-      const filter = { Department: { Name: { contains: 'foo'} } }
+      const filter = { Department: { Name: { contains: 'foo' } } }
       const expected = "?$filter=contains(Department/Name,'foo')"
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
@@ -441,7 +441,7 @@ describe('transform', () => {
           with: 'sum',
           as: 'Total'
         }
-      },{
+      }, {
         Amount: {
           with: 'max',
           as: 'Max'
@@ -519,7 +519,8 @@ describe('transform', () => {
             }
           }
         }]
-      }}
+      }
+    }
     ]
     const expected = '?$apply=groupby((SomeProp),aggregate(Id with countdistinct as Total))';
     const actual = buildQuery({ transform });
@@ -553,7 +554,7 @@ describe('transform', () => {
       filter: {
         PropName: 1
       }
-    },{
+    }, {
       groupBy: {
         properties: ['SomeProp'],
         transform: [{
@@ -565,7 +566,7 @@ describe('transform', () => {
           }
         }]
       }
-    },{
+    }, {
       filter: {
         Total: { ge: 5 }
       }
@@ -713,7 +714,8 @@ describe('count', () => {
             }
           }
         }]
-      }}
+      }
+    }
     ]
     const expected = '/$count?$apply=filter(PropName eq 1)/groupby((SomeProp),aggregate(Id with countdistinct as Total))';
     const actual = buildQuery({ count, transform });

@@ -125,7 +125,7 @@ function buildFilter(filters = {}, propPrefix = '') {
           if ([...COMPARISON_OPERATORS, ...LOGICAL_OPERATORS].indexOf(op) !== -1) {
             result.push(`${propName} ${op} ${handleValue(value[op])}`)
           } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
-            const lambaParameter = propName[0].toLowerCase();
+            const lambaParameter = filterKey[0].toLowerCase();
             const filter = buildFilter(value[op], lambaParameter);
 
             if (filter !== undefined) {
