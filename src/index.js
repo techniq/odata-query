@@ -66,7 +66,7 @@ export default function ({ select, filter, search, groupBy, transform, orderBy, 
       path += `/${func}`;
     } else if (typeof(func) === 'object') {
       const [funcName] = Object.keys(func);
-      const funcParams = Object.keys(func[funcName]).map(p => `${p}=${func[funcName][p]}`).join(',')
+      const funcParams = Object.keys(func[funcName]).map(p => `${p}=${handleValue(func[funcName][p])}`).join(',')
 
       path += `/${funcName}`;
       if (funcParams.length) {
@@ -158,9 +158,20 @@ function buildFilter(filters = {}, propPrefix = '') {
   }
 }
 
+function escapeIllegalChars(string) {
+  string = string.replace(/%/g, "%25");
+  string = string.replace(/\+/g, "%2B");
+  string = string.replace(/\//g, "%2F");
+  string = string.replace(/\?/g, "%3F");
+  string = string.replace(/#/g, "%23");
+  string = string.replace(/&/g, "%26");
+  string = string.replace(/'/g, "''");
+  return string;
+};
+
 function handleValue(value) {
   if (typeof(value) === 'string') {
-    return `'${value.replace("'", "''")}'`
+    return `'${escapeIllegalChars(value)}'`
   } else if (value instanceof Date) {
     return value.toISOString();
   } else {
