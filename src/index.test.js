@@ -88,6 +88,32 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+    
+    it.skip('should handle nested properties on the same property (implicit "and")', () => {
+      const filter = {
+        SomeProp: {
+          NestedProp1: 1,
+          NestedProp2: 2
+        }
+      };
+      const expected = "?$filter=(SomeProp/NestedProp1 eq 1 and SomeProp/NestedProp2 eq 2)";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle nested properties on the same property (explicit "and")', () => {
+      const filter = {
+        SomeProp: {
+          and: {
+            NestedProp1: 1,
+            NestedProp2: 2
+          }
+        }
+      };
+      const expected = "?$filter=(SomeProp/NestedProp1 eq 1 and SomeProp/NestedProp2 eq 2)";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
   });
 
   describe('logical operators', () => {
@@ -303,7 +329,7 @@ describe('filter', () => {
     });
 
     // TODO: duplicating filter clauses `(Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null)`.  Still logically the same result
-    it.skip('should handle nested logical operators and deeply nested properties on same property using objects', () => {
+    it.skip('should handle nested logical operators and deeply nested properties on same property using objects (shorthand)', () => {
       const filter = {
           Prop1: {
             NestedProp1: 1
@@ -332,6 +358,40 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+
+    it('should handle nested logical operators and deeply nested properties on same property using objects (expanded)', () => {
+      const filter = {
+          Prop1: {
+            NestedProp1: 1
+          },
+          or: [
+            { 
+              Prop2: {
+                and: {
+                  NestedProp2: {
+                    DeeplyNestedProp2: 2
+                  },
+                  NestedProp3: {
+                    ne: null
+                  }
+                }
+              }
+            },
+            {
+              Prop4: {
+                NestedProp4: {
+                  DeeplyNestedProp4: 4
+                }
+              }
+            }
+          ]
+      };
+      const expected = "?$filter=Prop1/NestedProp1 eq 1 and (((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null)) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+
   });
 
   describe('collection operators', () => {
