@@ -144,24 +144,38 @@ function buildFilter(filters = {}, propPrefix = '') {
         const op = filterKey;
         const builtFilters = value
           .map(v => buildFilter(v, propPrefix))
-          .filter(f => f !== undefined);
+          .filter(f => f !== undefined)
+          .map(f => (LOGICAL_OPERATORS.indexOf(op) !== -1 ? `(${f})` : f));
         if (builtFilters.length) {
-          result.push(`(${builtFilters.join(` ${op} `)})`);
+          if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
+            result.push(`(${builtFilters.join(` ${op} `)})`);
+          } else {
+            result.push(`${builtFilters.join(` ${op} `)}`);
+          }
         }
       } else if (LOGICAL_OPERATORS.indexOf(propName) !== -1) {
+        const op = propName;
         const builtFilters = Object.keys(value).map(valueKey =>
           buildFilter({ [valueKey]: value[valueKey] })
         );
         if (builtFilters.length) {
-          result.push(`${builtFilters.join(` ${propName} `)}`);
+          result.push(builtFilters.join(` ${op} `));
         }
       } else if (value instanceof Object) {
         const operators = Object.keys(value);
         operators.forEach(op => {
-          if (
-            [...COMPARISON_OPERATORS, ...LOGICAL_OPERATORS].indexOf(op) !== -1
-          ) {
+          if (COMPARISON_OPERATORS.indexOf(op) !== -1) {
             result.push(`${propName} ${op} ${handleValue(value[op])}`);
+          } else if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
+            if (Array.isArray(value[op])) {
+              result.push(
+                value[op]
+                  .map(v => '(' + buildFilter(v, propName) + ')')
+                  .join(` ${op} `)
+              );
+            } else {
+              result.push('(' + buildFilter(value[op], propName) + ')');
+            }
           } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
             const lambaParameter = filterKey[0].toLowerCase();
             const filter = buildFilter(value[op], lambaParameter);
