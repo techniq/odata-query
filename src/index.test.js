@@ -88,7 +88,7 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
-    
+
     it.skip('should handle nested properties on the same property (implicit "and")', () => {
       const filter = {
         SomeProp: {
@@ -218,12 +218,12 @@ describe('filter', () => {
       const filter = {
         or: [
           { Prop1: 1 },
-          { 
+          {
             and: {
               Prop2: 2,
               Prop3: 3
             }
-        } 
+        }
         ]
       };
       const expected = "?$filter=((Prop1 eq 1) or (Prop2 eq 2 and Prop3 eq 3))";
@@ -272,7 +272,7 @@ describe('filter', () => {
             {
               Prop4: {
                 NestedProp4: {
-                  DeeplyNestedProp4:4 
+                  DeeplyNestedProp4:4
                 }
               }
             }
@@ -301,7 +301,7 @@ describe('filter', () => {
               }
             ]
           }
-          
+
       };
       const expected = "?$filter=Prop1/NestedProp1 eq 1 and (Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null) or (Prop2/NestedProp4/DeeplyNestedProp4 eq 4)";
       const actual = buildQuery({ filter });
@@ -335,7 +335,7 @@ describe('filter', () => {
             NestedProp1: 1
           },
           or: [
-            { 
+            {
               Prop2: {
                 NestedProp2: {
                   DeeplyNestedProp2: 2
@@ -365,7 +365,7 @@ describe('filter', () => {
             NestedProp1: 1
           },
           or: [
-            { 
+            {
               Prop2: {
                 and: {
                   NestedProp2: {
@@ -580,6 +580,13 @@ describe('filter', () => {
       const expected = '?$filter=DateProp eq 2017-03-30T07:30:00.000Z';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
+    });
+
+    it('should handle GUID values', () => {
+        const filter = { "someProp": { eq: { cast: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' } } };
+        const expected = '?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd';
+        const actual = buildQuery({ filter });
+        expect(actual).toEqual(expected);
     });
   });
 

@@ -17,7 +17,7 @@ import buildQuery from 'odata-query'
 
 const query = buildQuery({...})
 fetch(`http://localhost${query}`)
-``` 
+```
 where the query object syntax for `{...}` is defined below.  There is also [react-odata](https://github.com/techniq/react-odata) which utilizies this library for a declarative React component.
 
 ## Usage
@@ -57,7 +57,7 @@ See [tests](src/index.test.js) for examples as well
 - [Actions](#actions)
 - [Functions](#functions-1)
 - [Transforms](#transforms)
-  
+
 ### Filtering
 ```js
 buildQuery({ filter: {...} })
@@ -90,8 +90,8 @@ buildQuery({ filter })
 ##### Implied `and` with multiple comparison operators for a single property
 Useful to perform a `between` query on a `Date` property
 ```js
-const startDate = new Date(Date.UTC(2017, 0, 1)) 
-const endDate = new Date(Date.UTC(2017, 2, 1)) 
+const startDate = new Date(Date.UTC(2017, 0, 1))
+const endDate = new Date(Date.UTC(2017, 2, 1))
 const filter = { DateProp: { ge: startDate, le: endDate } }
 buildQuery({ filter })
 => "?$filter=DateProp ge 2017-01-01T00:00:00Z and DateProp le 2017-03-01T00:00:00Z"
@@ -106,7 +106,7 @@ const filter = {
     'startswith(Name, "foo")'
   ]
 };
-    
+
 buildQuery({ filter })
 => '?$filter=SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, "foo")'
 ```
@@ -126,7 +126,7 @@ const filter = {
     }
   }
 };
-    
+
 buildQuery({ filter })
 => '?$filter=ItemsProp/any(i:i/SomeProp eq 1 and i/AnotherProp eq 2)'
 ```
@@ -141,7 +141,7 @@ const filter = {
     ]
   }
 };
-    
+
 buildQuery({ filter })
 => '?$filter=ItemsProp/any(i:i/SomeProp eq 1 and i/AnotherProp eq 2)'
 ```
@@ -158,7 +158,7 @@ const filter = {
     }
   }
 };
-    
+
 buildQuery({ filter })
 => '?$filter=ItemsProp/any(i:(i/SomeProp eq 1 or i/AnotherProp eq 2)'
 ```
@@ -204,7 +204,14 @@ buildQuery({ filter })
 ```
 
 #### Data types
-Coming soon
+GUID:
+```js
+const filter = { "someProp": { eq: { cast: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' } };
+buildQuery({ filter })
+=> "?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd"
+```
+
+Other types coming soon
 
 #### Search
 ```js
