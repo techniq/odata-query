@@ -236,9 +236,11 @@ function handleValue(value) {
     return value;
   } else {
     // TODO: Figure out how best to specify types.  See: https://github.com/devnixs/ODataAngularResources/blob/master/src/odatavalue.js
-    switch (value && value.cast) {
+    switch (value && value.type) {
       case 'guid':
-      return value.value;
+        return value.value;
+      case 'raw':
+        return value.value;
     }
     return value;
   }

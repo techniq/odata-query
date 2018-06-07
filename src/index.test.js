@@ -583,8 +583,15 @@ describe('filter', () => {
     });
 
     it('should handle GUID values', () => {
-        const filter = { "someProp": { eq: { cast: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' } } };
+        const filter = { "someProp": { eq: { type: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' } } };
         const expected = '?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd';
+        const actual = buildQuery({ filter });
+        expect(actual).toEqual(expected);
+    });
+
+    it('should handle GUID values', () => {
+        const filter = { "someProp": { eq: { type: 'raw', value: '2018-03-30' } } };
+        const expected = '?$filter=someProp eq 2018-03-30';
         const actual = buildQuery({ filter });
         expect(actual).toEqual(expected);
     });
