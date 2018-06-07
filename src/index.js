@@ -232,8 +232,14 @@ function handleValue(value) {
     return `'${escapeIllegalChars(value)}'`;
   } else if (value instanceof Date) {
     return value.toISOString();
+  } else if (value instanceof Number) {
+    return value;
   } else {
     // TODO: Figure out how best to specify types.  See: https://github.com/devnixs/ODataAngularResources/blob/master/src/odatavalue.js
+    switch (value && value.cast) {
+      case 'guid':
+      return value.value;
+    }
     return value;
   }
 }
