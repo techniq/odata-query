@@ -589,7 +589,7 @@ describe('filter', () => {
         expect(actual).toEqual(expected);
     });
 
-    it('should handle GUID values', () => {
+    it('should handle raw values', () => {
         const filter = { "someProp": { eq: { type: 'raw', value: '2018-03-30' } } };
         const expected = '?$filter=someProp eq 2018-03-30';
         const actual = buildQuery({ filter });
