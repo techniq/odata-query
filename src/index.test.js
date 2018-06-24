@@ -595,6 +595,13 @@ describe('filter', () => {
         const actual = buildQuery({ filter });
         expect(actual).toEqual(expected);
     });
+
+    it('should handle shorthand raw values', () => {
+        const filter = { "someProp": { type: 'raw', value: '2018-03-30' }};
+        const expected = '?$filter=someProp eq 2018-03-30';
+        const actual = buildQuery({ filter });
+        expect(actual).toEqual(expected);
+    });
   });
 
   describe('functions', () => {

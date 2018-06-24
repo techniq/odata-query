@@ -162,45 +162,49 @@ function buildFilter(filters = {}, propPrefix = '') {
           result.push(builtFilters.join(` ${op} `));
         }
       } else if (value instanceof Object) {
-        const operators = Object.keys(value);
-        operators.forEach(op => {
-          if (COMPARISON_OPERATORS.indexOf(op) !== -1) {
-            result.push(`${propName} ${op} ${handleValue(value[op])}`);
-          } else if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
-            if (Array.isArray(value[op])) {
-              result.push(
-                value[op]
-                  .map(v => '(' + buildFilter(v, propName) + ')')
-                  .join(` ${op} `)
-              );
-            } else {
-              result.push('(' + buildFilter(value[op], propName) + ')');
-            }
-          } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
-            const lambaParameter = filterKey[0].toLowerCase();
-            const filter = buildFilter(value[op], lambaParameter);
+        if ('type' in value) {
+          result.push(`${propName} eq ${handleValue(value)}`);
+        } else {
+          const operators = Object.keys(value);
+          operators.forEach(op => {
+            if (COMPARISON_OPERATORS.indexOf(op) !== -1) {
+              result.push(`${propName} ${op} ${handleValue(value[op])}`);
+            } else if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
+              if (Array.isArray(value[op])) {
+                result.push(
+                  value[op]
+                    .map(v => '(' + buildFilter(v, propName) + ')')
+                    .join(` ${op} `)
+                );
+              } else {
+                result.push('(' + buildFilter(value[op], propName) + ')');
+              }
+            } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
+              const lambaParameter = filterKey[0].toLowerCase();
+              const filter = buildFilter(value[op], lambaParameter);
 
-            if (filter !== undefined) {
-              // Do not apply collection filter if undefined (ex. ignore `Foo: { any: {} }`)
-              result.push(`${propName}/${op}(${lambaParameter}:${filter})`);
+              if (filter !== undefined) {
+                // Do not apply collection filter if undefined (ex. ignore `Foo: { any: {} }`)
+                result.push(`${propName}/${op}(${lambaParameter}:${filter})`);
+              }
+            } else if (op === 'in') {
+              // Convert `{ Prop: { in: [1,2,3] } }` to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
+              result.push(
+                '(' +
+                  value[op]
+                    .map(v => `${propName} eq ${handleValue(v)}`)
+                    .join(' or ') +
+                  ')'
+              );
+            } else if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
+              // Simple boolean functions (startswith, endswith, contains)
+              result.push(`${op}(${propName},${handleValue(value[op])})`);
+            } else {
+              // Nested property
+              result.push(buildFilter(value, propName));
             }
-          } else if (op === 'in') {
-            // Convert `{ Prop: { in: [1,2,3] } }` to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
-            result.push(
-              '(' +
-                value[op]
-                  .map(v => `${propName} eq ${handleValue(v)}`)
-                  .join(' or ') +
-                ')'
-            );
-          } else if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
-            // Simple boolean functions (startswith, endswith, contains)
-            result.push(`${op}(${propName},${handleValue(value[op])})`);
-          } else {
-            // Nested property
-            result.push(buildFilter(value, propName));
-          }
-        });
+          });
+        }
       } else if (value === undefined) {
         // Ignore/omit filter if value is `undefined`
       } else {
