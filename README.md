@@ -206,7 +206,7 @@ buildQuery({ filter })
 #### Data types
 GUID:
 ```js
-const filter = { "someProp": { eq: { cast: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' } };
+const filter = { "someProp": { eq: { type: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' } } };
 buildQuery({ filter })
 => "?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd"
 ```
