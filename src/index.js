@@ -249,7 +249,7 @@ function handleValue(value) {
     // TODO: Figure out how best to specify types.  See: https://github.com/devnixs/ODataAngularResources/blob/master/src/odatavalue.js
     switch (value && value.type) {
       case 'guid':
-        return value.value;
+        return `guid'${value.value}'`;
       case 'raw':
         return value.value;
     }

@@ -584,21 +584,21 @@ describe('filter', () => {
 
     it('should handle GUID values', () => {
         const filter = { "someProp": { eq: { type: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' } } };
-        const expected = '?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd';
+        const expected = '?$filter=someProp eq guid\'cd5977c2-4a64-42de-b2fc-7fe4707c65cd\'';
         const actual = buildQuery({ filter });
         expect(actual).toEqual(expected);
     });
 
     it('should handle GUID values with explicit eq ', () => {
         const filter = { "someProp": {  type: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd'  } };
-        const expected = '?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd';
+        const expected = '?$filter=someProp eq guid\'cd5977c2-4a64-42de-b2fc-7fe4707c65cd\'';
         const actual = buildQuery({ filter });
         expect(actual).toEqual(expected);
     });
 
     it('should handle GUID values with an in operator', () => {
         const filter = { "someProp": {"in": {  type: 'guid', value: ['cd5977c2-4a64-42de-b2fc-7fe4707c65cd', 'cd5977c2-4a64-42de-b2fc-7fe4707c65ce'] } } };
-        const expected = '?$filter=(someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd or someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65ce)';
+        const expected = '?$filter=(someProp eq guid\'cd5977c2-4a64-42de-b2fc-7fe4707c65cd\' or someProp eq guid\'cd5977c2-4a64-42de-b2fc-7fe4707c65ce\')';
         const actual = buildQuery({ filter });
         expect(actual).toEqual(expected);
     });
