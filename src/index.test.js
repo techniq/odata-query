@@ -96,7 +96,8 @@ describe('filter', () => {
           NestedProp2: 2
         }
       };
-      const expected = "?$filter=(SomeProp/NestedProp1 eq 1 and SomeProp/NestedProp2 eq 2)";
+      const expected =
+        '?$filter=(SomeProp/NestedProp1 eq 1 and SomeProp/NestedProp2 eq 2)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -110,7 +111,8 @@ describe('filter', () => {
           }
         }
       };
-      const expected = "?$filter=(SomeProp/NestedProp1 eq 1 and SomeProp/NestedProp2 eq 2)";
+      const expected =
+        '?$filter=(SomeProp/NestedProp1 eq 1 and SomeProp/NestedProp2 eq 2)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -223,107 +225,108 @@ describe('filter', () => {
               Prop2: 2,
               Prop3: 3
             }
-        }
+          }
         ]
       };
-      const expected = "?$filter=((Prop1 eq 1) or (Prop2 eq 2 and Prop3 eq 3))";
+      const expected = '?$filter=((Prop1 eq 1) or (Prop2 eq 2 and Prop3 eq 3))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
     it('should handle nested properties using "/" selectors', () => {
       const filter = {
-          Prop1: {
-            NestedProp1: 1
+        Prop1: {
+          NestedProp1: 1
+        },
+        or: [
+          {
+            'Prop2/NestedProp2/DeeplyNestedProp2': 2,
+            'Prop3/NestedProp3': { ne: null }
           },
-          or: [
-            {
-              'Prop2/NestedProp2/DeeplyNestedProp2': 2,
-              'Prop3/NestedProp3': { ne: null }
-            },
-            {
-              'Prop4/NestedProp4/DeeplyNestedProp4': 4
-            }
-          ]
+          {
+            'Prop4/NestedProp4/DeeplyNestedProp4': 4
+          }
+        ]
       };
-      const expected = "?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop3/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))";
+      const expected =
+        '?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop3/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
     it('should handle nested properties using objects', () => {
       const filter = {
-          Prop1: {
-            NestedProp1: 1
-          },
-          or: [
-            {
-              Prop2: {
-                NestedProp2:{
-                  DeeplyNestedProp2: 2
-                }
-              },
-              Prop3: {
-                NestedProp3: {
-                  ne: null
-                }
+        Prop1: {
+          NestedProp1: 1
+        },
+        or: [
+          {
+            Prop2: {
+              NestedProp2: {
+                DeeplyNestedProp2: 2
               }
             },
-            {
-              Prop4: {
-                NestedProp4: {
-                  DeeplyNestedProp4:4
-                }
+            Prop3: {
+              NestedProp3: {
+                ne: null
               }
             }
-          ]
+          },
+          {
+            Prop4: {
+              NestedProp4: {
+                DeeplyNestedProp4: 4
+              }
+            }
+          }
+        ]
       };
-      const expected = "?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop3/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))";
+      const expected =
+        '?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop3/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-
-
     it('should handle more stuff jason stadler throws at it - not working', () => {
       const filter = {
-          Prop1: {
-            NestedProp1: 1
-          },
-          Prop2: {
-            or: [
-              {
-                'NestedProp2/DeeplyNestedProp2': 2,
-                NestedProp3: { ne: null }
-              },
-              {
-                'NestedProp4/DeeplyNestedProp4': 4,
-              }
-            ]
-          }
-
+        Prop1: {
+          NestedProp1: 1
+        },
+        Prop2: {
+          or: [
+            {
+              'NestedProp2/DeeplyNestedProp2': 2,
+              NestedProp3: { ne: null }
+            },
+            {
+              'NestedProp4/DeeplyNestedProp4': 4
+            }
+          ]
+        }
       };
-      const expected = "?$filter=Prop1/NestedProp1 eq 1 and (Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null) or (Prop2/NestedProp4/DeeplyNestedProp4 eq 4)";
+      const expected =
+        '?$filter=Prop1/NestedProp1 eq 1 and (Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null) or (Prop2/NestedProp4/DeeplyNestedProp4 eq 4)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
     it('should handle nested logical operators and nested properties using "/" selectors', () => {
       const filter = {
-          Prop1: {
-            NestedProp1: 1
+        Prop1: {
+          NestedProp1: 1
+        },
+        or: [
+          {
+            'Prop2/NestedProp2/DeeplyNestedProp2': 2,
+            'Prop2/NestedProp3': { ne: null }
           },
-          or: [
-            {
-              'Prop2/NestedProp2/DeeplyNestedProp2': 2,
-              'Prop2/NestedProp3': { ne: null }
-            },
-            {
-              'Prop4/NestedProp4/DeeplyNestedProp4': 4,
-            }
-          ]
+          {
+            'Prop4/NestedProp4/DeeplyNestedProp4': 4
+          }
+        ]
       };
-      const expected = "?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))";
+      const expected =
+        '?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -331,12 +334,44 @@ describe('filter', () => {
     // TODO: duplicating filter clauses `(Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null)`.  Still logically the same result
     it.skip('should handle nested logical operators and deeply nested properties on same property using objects (shorthand)', () => {
       const filter = {
-          Prop1: {
-            NestedProp1: 1
+        Prop1: {
+          NestedProp1: 1
+        },
+        or: [
+          {
+            Prop2: {
+              NestedProp2: {
+                DeeplyNestedProp2: 2
+              },
+              NestedProp3: {
+                ne: null
+              }
+            }
           },
-          or: [
-            {
-              Prop2: {
+          {
+            Prop4: {
+              NestedProp4: {
+                DeeplyNestedProp4: 4
+              }
+            }
+          }
+        ]
+      };
+      const expected =
+        '?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle nested logical operators and deeply nested properties on same property using objects (expanded)', () => {
+      const filter = {
+        Prop1: {
+          NestedProp1: 1
+        },
+        or: [
+          {
+            Prop2: {
+              and: {
                 NestedProp2: {
                   DeeplyNestedProp2: 2
                 },
@@ -344,54 +379,22 @@ describe('filter', () => {
                   ne: null
                 }
               }
-            },
-            {
-              Prop4: {
-                NestedProp4: {
-                  DeeplyNestedProp4: 4
-                }
-              }
             }
-          ]
-      };
-      const expected = "?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))";
-      const actual = buildQuery({ filter });
-      expect(actual).toEqual(expected);
-    });
-
-    it('should handle nested logical operators and deeply nested properties on same property using objects (expanded)', () => {
-      const filter = {
-          Prop1: {
-            NestedProp1: 1
           },
-          or: [
-            {
-              Prop2: {
-                and: {
-                  NestedProp2: {
-                    DeeplyNestedProp2: 2
-                  },
-                  NestedProp3: {
-                    ne: null
-                  }
-                }
-              }
-            },
-            {
-              Prop4: {
-                NestedProp4: {
-                  DeeplyNestedProp4: 4
-                }
+          {
+            Prop4: {
+              NestedProp4: {
+                DeeplyNestedProp4: 4
               }
             }
-          ]
+          }
+        ]
       };
-      const expected = "?$filter=Prop1/NestedProp1 eq 1 and (((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null)) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))";
+      const expected =
+        '?$filter=Prop1/NestedProp1 eq 1 and (((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null)) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
-
-
   });
 
   describe('collection operators', () => {
@@ -583,38 +586,60 @@ describe('filter', () => {
     });
 
     it('should handle GUID values', () => {
-        const filter = { "someProp": { eq: { type: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' } } };
-        const expected = '?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd';
-        const actual = buildQuery({ filter });
-        expect(actual).toEqual(expected);
+      const filter = {
+        someProp: {
+          eq: { type: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' }
+        }
+      };
+      const expected =
+        '?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
     });
 
     it('should handle GUID values with explicit eq ', () => {
-        const filter = { "someProp": {  type: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd'  } };
-        const expected = '?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd';
-        const actual = buildQuery({ filter });
-        expect(actual).toEqual(expected);
+      const filter = {
+        someProp: {
+          type: 'guid',
+          value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd'
+        }
+      };
+      const expected =
+        '?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
     });
 
     it('should handle GUID values with an in operator', () => {
-        const filter = { "someProp": {"in": {  type: 'guid', value: ['cd5977c2-4a64-42de-b2fc-7fe4707c65cd', 'cd5977c2-4a64-42de-b2fc-7fe4707c65ce'] } } };
-        const expected = '?$filter=(someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd or someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65ce)';
-        const actual = buildQuery({ filter });
-        expect(actual).toEqual(expected);
+      const filter = {
+        someProp: {
+          in: {
+            type: 'guid',
+            value: [
+              'cd5977c2-4a64-42de-b2fc-7fe4707c65cd',
+              'cd5977c2-4a64-42de-b2fc-7fe4707c65ce'
+            ]
+          }
+        }
+      };
+      const expected =
+        '?$filter=(someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd or someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65ce)';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
     });
 
     it('should handle raw values', () => {
-        const filter = { "someProp": { eq: { type: 'raw', value: '2018-03-30' } } };
-        const expected = '?$filter=someProp eq 2018-03-30';
-        const actual = buildQuery({ filter });
-        expect(actual).toEqual(expected);
+      const filter = { someProp: { eq: { type: 'raw', value: '2018-03-30' } } };
+      const expected = '?$filter=someProp eq 2018-03-30';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
     });
 
     it('should handle shorthand raw values', () => {
-        const filter = { "someProp": { type: 'raw', value: '2018-03-30' }};
-        const expected = '?$filter=someProp eq 2018-03-30';
-        const actual = buildQuery({ filter });
-        expect(actual).toEqual(expected);
+      const filter = { someProp: { type: 'raw', value: '2018-03-30' } };
+      const expected = '?$filter=someProp eq 2018-03-30';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
     });
   });
 
@@ -1187,6 +1212,13 @@ describe('function', () => {
     const func = { Test: { One: 1, Two: 2 } };
     const expected = '(1)/Test(One=1,Two=2)';
     const actual = buildQuery({ key, func });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support an function on a with a raw parameter', () => {
+    const func = { Test: { SomeDate: { type: 'raw', value: '2018-08-01' } } };
+    const expected = '/Test(SomeDate=2018-08-01)';
+    const actual = buildQuery({ func });
     expect(actual).toEqual(expected);
   });
 });
