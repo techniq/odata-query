@@ -1192,7 +1192,7 @@ describe('function', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('should support an function on an entity', () => {
+  it('should support a function on an entity', () => {
     const key = 1;
     const func = 'Test';
     const expected = '(1)/Test';
@@ -1200,14 +1200,14 @@ describe('function', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('should support an function on a collection with parameters', () => {
+  it('should support a function on a collection with parameters', () => {
     const func = { Test: { One: 1, Two: 2 } };
     const expected = '/Test(One=1,Two=2)';
     const actual = buildQuery({ func });
     expect(actual).toEqual(expected);
   });
 
-  it('should support an function on an entity with parameters', () => {
+  it('should support a function on an entity with parameters', () => {
     const key = 1;
     const func = { Test: { One: 1, Two: 2 } };
     const expected = '(1)/Test(One=1,Two=2)';
@@ -1215,9 +1215,26 @@ describe('function', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('should support an function on a with a raw parameter', () => {
+  it('should support a function on a with a raw parameter', () => {
     const func = { Test: { SomeDate: { type: 'raw', value: '2018-08-01' } } };
     const expected = '/Test(SomeDate=2018-08-01)';
+    const actual = buildQuery({ func });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support a function on a with an array/collection parameter of a simple type', () => {
+    const func = { Test: { SomeCollection: [1, 2, 3] } };
+    const expected = '/Test(SomeCollection=[1,2,3])';
+    const actual = buildQuery({ func });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support a function on a with an array/collection parameter of a complex type', () => {
+    const func = {
+      Test: { SomeCollection: [{ Name: 'Sean' }, { Name: 'Jason' }] }
+    };
+    const expected =
+      '/Test(SomeCollection=@SomeCollection)?@SomeCollection=%5B%7B%22Name%22%3A%22Sean%22%7D%2C%7B%22Name%22%3A%22Jason%22%7D%5D';
     const actual = buildQuery({ func });
     expect(actual).toEqual(expected);
   });

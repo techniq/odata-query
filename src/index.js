@@ -88,13 +88,26 @@ export default function({
       path += `/${func}`;
     } else if (typeof func === 'object') {
       const [funcName] = Object.keys(func);
-      const funcParams = Object.keys(func[funcName])
-        .map(p => `${p}=${handleValue(func[funcName][p])}`)
-        .join(',');
+      const funcArgs = Object.keys(func[funcName]).reduce(
+        (acc, item) => {
+          const value = func[funcName][item];
+          if (Array.isArray(value) && typeof value[0] === 'object') {
+            acc.params.push(`${item}=@${item}`);
+            acc.aliases.push(`@${item}=${escape(JSON.stringify(value))}`);
+          } else {
+            acc.params.push(`${item}=${handleValue(value)}`);
+          }
+          return acc;
+        },
+        { params: [], aliases: [] }
+      );
 
       path += `/${funcName}`;
-      if (funcParams.length) {
-        path += `(${funcParams})`;
+      if (funcArgs.params.length) {
+        path += `(${funcArgs.params.join(',')})`;
+      }
+      if (funcArgs.aliases.length) {
+        path += `?${funcArgs.aliases.join(',')}`;
       }
     }
   }
@@ -247,6 +260,8 @@ function handleValue(value) {
     return value.toISOString();
   } else if (value instanceof Number) {
     return value;
+  } else if (Array.isArray(value)) {
+    return `[${value.join(',')}]`;
   } else {
     // TODO: Figure out how best to specify types.  See: https://github.com/devnixs/ODataAngularResources/blob/master/src/odatavalue.js
     switch (value && value.type) {
