@@ -1215,21 +1215,28 @@ describe('function', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('should support a function on a with a raw parameter', () => {
+  it('should support a function on a collection with a raw parameter', () => {
     const func = { Test: { SomeDate: { type: 'raw', value: '2018-08-01' } } };
     const expected = '/Test(SomeDate=2018-08-01)';
     const actual = buildQuery({ func });
     expect(actual).toEqual(expected);
   });
 
-  it('should support a function on a with an array/collection parameter of a simple type', () => {
+  it('should support a function on a collection with an array/collection parameter of a simple type (number)', () => {
     const func = { Test: { SomeCollection: [1, 2, 3] } };
     const expected = '/Test(SomeCollection=[1,2,3])';
     const actual = buildQuery({ func });
     expect(actual).toEqual(expected);
   });
 
-  it('should support a function on a with an array/collection parameter of a complex type', () => {
+  it('should support a function on a collection with an array/collection parameter of a simple type (string)', () => {
+    const func = { Test: { SomeCollection: ['One', 'Two', 'Three'] } };
+    const expected = "/Test(SomeCollection=['One','Two','Three'])";
+    const actual = buildQuery({ func });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support a function on a collection with an array/collection parameter of a complex type', () => {
     const func = {
       Test: { SomeCollection: [{ Name: 'Sean' }, { Name: 'Jason' }] }
     };

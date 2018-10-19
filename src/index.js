@@ -261,7 +261,9 @@ function handleValue(value) {
   } else if (value instanceof Number) {
     return value;
   } else if (Array.isArray(value)) {
-    return `[${value.join(',')}]`;
+    // Double quote strings to keep them after `.join`
+    const arr = value.map(d => (typeof d === 'string' ? `'${d}'` : d));
+    return `[${arr.join(',')}]`;
   } else {
     // TODO: Figure out how best to specify types.  See: https://github.com/devnixs/ODataAngularResources/blob/master/src/odatavalue.js
     switch (value && value.type) {
