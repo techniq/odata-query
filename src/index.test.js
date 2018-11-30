@@ -1246,3 +1246,12 @@ describe('function', () => {
     expect(actual).toEqual(expected);
   });
 });
+
+describe('format', () => {
+  it('should support format', () => {
+    const format = 'json';
+    const expected = '?$format=json';
+    const actual = buildQuery({ format });
+    expect(actual).toEqual(expected);
+  })
+})
