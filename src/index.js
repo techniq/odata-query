@@ -25,7 +25,8 @@ export default function({
   count,
   expand,
   action,
-  func
+  func,
+  format
 } = {}) {
   let path = '';
   const params = {};
@@ -118,6 +119,10 @@ export default function({
 
   if (orderBy) {
     params.$orderby = buildOrderBy(orderBy);
+  }
+
+  if(format) {
+    params.$format = format;
   }
 
   return buildUrl(path, params);
