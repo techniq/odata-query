@@ -166,9 +166,15 @@ function buildFilter(filters = {}, propPrefix = '') {
           .map(f => (LOGICAL_OPERATORS.indexOf(op) !== -1 ? `(${f})` : f));
         if (builtFilters.length) {
           if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
-            result.push(parseNot(op, builtFilters, true));
+            if (builtFilters.length) {
+              if (op === 'not') {
+                result.push(parseNot(op, builtFilters));
+              }else{
+                result.push(`(${builtFilters.join(` ${op} `)})`)
+              }
+              }
           } else {
-            result.push(builtFilters.join(` ${op} `));
+                result.push(builtFilters.join(` ${op} `));
           }
         }
       } else if (LOGICAL_OPERATORS.indexOf(propName) !== -1) {
@@ -177,7 +183,12 @@ function buildFilter(filters = {}, propPrefix = '') {
           buildFilter({ [valueKey]: value[valueKey] })
         );
         if (builtFilters.length) {
-          result.push(parseNot(op, builtFilters, false));
+          if (op === 'not') {
+            result.push(parseNot(op, builtFilters));
+
+          }else{
+            result.push(`${builtFilters.join(` ${op} `)}`)
+          }
         }
       } else if (value instanceof Object) {
         if ('type' in value) {
@@ -438,8 +449,7 @@ function buildUrl(path, params) {
   }
 }
 
-function parseNot(op, builtFilters, parentheses) {
-  if (op === 'not') {
+function parseNot(op, builtFilters) {
     if (builtFilters.length > 1) {
       return `not( ${builtFilters.join(' and ')})`
     } else {
@@ -451,11 +461,4 @@ function parseNot(op, builtFilters, parentheses) {
         }
       })
     }
-  } else {
-    if (parentheses) {
-      return `(${builtFilters.join(` ${op} `)})`;
-    } else {
-      return `${builtFilters.join(` ${op} `)}`;
-    }
-  }
 }
