@@ -119,6 +119,34 @@ describe('filter', () => {
   });
 
   describe('logical operators', () => {
+    it('should handle simple logical operators (not) as an object', () => {
+      const filter = {and:[ {not: { FooProp: {'startswith': 'foo'}}},{not: { BarProp: {'startswith': 'bar'}}}, { FooBarProp: {'startswith': 'foobar'}}]};
+      const expected = '?$filter=((not startswith(FooProp,\'foo\')) and (not startswith(BarProp,\'bar\')) and (startswith(FooBarProp,\'foobar\')))';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle logical operators (not) as an object', () => {
+      const filter = {and:[ {not: { FooProp: {'startswith': 'foo'}, BarProp: {'startswith': 'bar'}}}, { FooBarProp: {'startswith': 'bar'}}]};
+      const expected = '?$filter=((not( startswith(FooProp,\'foo\') and startswith(BarProp,\'bar\'))) and (startswith(FooBarProp,\'bar\')))';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle simple logical operators (not) as an array', () => {
+      const filter =  {not: [ {FooProp: {'startswith': 'foo'}},{BarProp: {'startswith': 'bar'}}] };
+      const expected = '?$filter=not( (startswith(FooProp,\'foo\')) and (startswith(BarProp,\'bar\')))';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle logical operators (not) as an array', () => {
+      const filter = {or:[ {not: [ {FooProp: {'startswith': 'foo'}}, {BarProp: {'startswith': 'bar'}}]}]};
+      const expected = '?$filter=((not( (startswith(FooProp,\'foo\')) and (startswith(BarProp,\'bar\')))))';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+    
     it('should handle simple logical operators (and, or, etc) as an array', () => {
       const filter = { and: [{ SomeProp: 1 }, { AnotherProp: 2 }] };
       const expected = '?$filter=((SomeProp eq 1) and (AnotherProp eq 2))';
