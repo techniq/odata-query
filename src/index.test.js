@@ -146,7 +146,7 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
-    
+
     it('should handle simple logical operators (and, or, etc) as an array', () => {
       const filter = { and: [{ SomeProp: 1 }, { AnotherProp: 2 }] };
       const expected = '?$filter=((SomeProp eq 1) and (AnotherProp eq 2))';
@@ -469,7 +469,7 @@ describe('filter', () => {
         }
       };
       const expected =
-        '?$filter=Tasks/any(t:t/AssignedGroupId eq 1234 and t/StatusId eq 300)';
+        '?$filter=Tasks/any(tasks:tasks/AssignedGroupId eq 1234 and tasks/StatusId eq 300)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -481,7 +481,7 @@ describe('filter', () => {
         }
       };
       const expected =
-        '?$filter=Tasks/any(t:(t/AssignedGroupId eq 1234) and (t/StatusId eq 300))';
+        '?$filter=Tasks/any(tasks:(tasks/AssignedGroupId eq 1234) and (tasks/StatusId eq 300))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -497,7 +497,7 @@ describe('filter', () => {
         }
       };
       const expected =
-        '?$filter=Tasks/any(t:t/SubTasks/any(s:(s/AssignedGroupId eq 1234) and (s/StatusId eq 300)))';
+        '?$filter=Tasks/any(tasks:tasks/SubTasks/any(subtasks:(subtasks/AssignedGroupId eq 1234) and (subtasks/StatusId eq 300)))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -522,7 +522,7 @@ describe('filter', () => {
         }
       };
       const expected =
-        '?$filter=Tasks/any(t:t/SubTasks/any(s:s/AssignedGroupId eq 1234 and s/StatusId eq 300) and t/OtherTasks/all(o:o/StatusId eq 122 and o/AssignedGroupId eq 2345))';
+        '?$filter=Tasks/any(tasks:tasks/SubTasks/any(subtasks:subtasks/AssignedGroupId eq 1234 and subtasks/StatusId eq 300) and tasks/OtherTasks/all(othertasks:othertasks/StatusId eq 122 and othertasks/AssignedGroupId eq 2345))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -536,7 +536,7 @@ describe('filter', () => {
         }
       };
       const expected =
-        '?$filter=Tasks/any(t:((t/AssignedGroupId eq 1234) or (t/StatusId eq 300)))';
+        '?$filter=Tasks/any(tasks:((tasks/AssignedGroupId eq 1234) or (tasks/StatusId eq 300)))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -555,7 +555,7 @@ describe('filter', () => {
         }
       };
       const expected =
-        "?$filter=Tasks/any(t:(t/CreatedBy/Name eq 'Sean Lynch' and t/StatusId eq 300))";
+        "?$filter=Tasks/any(tasks:(tasks/CreatedBy/Name eq 'Sean Lynch' and tasks/StatusId eq 300))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -571,7 +571,7 @@ describe('filter', () => {
         }
       };
       const expected =
-        "?$filter=Tasks/any(t:contains(toupper(t/searchProp),'foo'))";
+        "?$filter=Tasks/any(tasks:contains(toupper(tasks/searchProp),'foo'))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });

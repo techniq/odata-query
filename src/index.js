@@ -209,7 +209,7 @@ function buildFilter(filters = {}, propPrefix = '') {
                 result.push('(' + buildFilter(value[op], propName) + ')');
               }
             } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
-              const lambaParameter = filterKey[0].toLowerCase();
+              const lambaParameter = filterKey.toLowerCase();
               const filter = buildFilter(value[op], lambaParameter);
 
               if (filter !== undefined) {
