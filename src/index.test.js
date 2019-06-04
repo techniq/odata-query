@@ -575,7 +575,23 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
-  });
+
+    it('should handle collection operator with a function indexof', () => {
+        const filter = {
+          Tasks: {
+            any: {
+              "indexof(toupper(searchProp),'foo')": {
+                eq: -1
+              }
+            }
+          }
+        };
+        const expected =
+          "?$filter=Tasks/any(tasks:indexof(toupper(tasks/searchProp),'foo') eq -1)";
+        const actual = buildQuery({ filter });
+        expect(actual).toEqual(expected);
+    });
+});
 
   describe('data types', () => {
     it('should handle a number', () => {
