@@ -11,6 +11,7 @@ const SUPPORTED_EXPAND_PROPERTIES = [
 ];
 
 const FUNCTION_REGEX = /\((.*)\)/;
+const INDEXOF_REGEX = /(?!indexof)\((\w+)\)/;
 
 export default function({
   select,
@@ -145,11 +146,18 @@ function buildFilter(filters = {}, propPrefix = '') {
   } else if (typeof filters === 'object') {
     const filtersArray = Object.keys(filters).reduce((result, filterKey) => {
       const value = filters[filterKey];
-      const propName = propPrefix
-        ? FUNCTION_REGEX.test(filterKey)
-          ? filterKey.replace(FUNCTION_REGEX, `(${propPrefix}/$1)`)
-          : `${propPrefix}/${filterKey}`
-        : filterKey;
+      let propName = '';
+      if(propPrefix){
+          if(INDEXOF_REGEX.test(filterKey)) {
+              propName = filterKey.replace(INDEXOF_REGEX, `(${propPrefix}/$1)`);
+          } else if(FUNCTION_REGEX.test(filterKey)) {
+              propName = filterKey.replace(FUNCTION_REGEX, `(${propPrefix}/$1)`);
+          } else {
+              propName = `${propPrefix}/${filterKey}`;
+          }
+      } else {
+          propName = filterKey;
+      }
 
       if (
         ['number', 'string', 'boolean'].indexOf(typeof value) !== -1 ||
