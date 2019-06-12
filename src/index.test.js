@@ -669,6 +669,20 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+
+    it('should handle binary values', () => {
+      const filter = { someProp: { eq: { type: 'binary', value: 'YmluYXJ5RGF0YQ==' } } };
+      const expected = "?$filter=someProp eq binary'YmluYXJ5RGF0YQ=='";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle shorthand raw values', () => {
+      const filter = { someProp: { type: 'binary', value: 'YmluYXJ5RGF0YQ==' } };
+      const expected = "?$filter=someProp eq binary'YmluYXJ5RGF0YQ=='";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
   });
 
   describe('functions', () => {
