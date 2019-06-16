@@ -36,7 +36,6 @@ export interface GroupBy {
 }
 export interface QueryOptions extends ExpandQueryOptions {
   search: string;
-  groupBy: GroupBy;
   transform: PlainObject | PlainObject[];
   skip: number;
   key: string | number | PlainObject;
@@ -45,67 +44,32 @@ export interface QueryOptions extends ExpandQueryOptions {
   func: string | { [functionName: string]: { [parameterName: string]: any } };
   format: string;
 }
-interface QueryParams {
-  $filter: string;
-  $select: string | string[];
-  $search: string;
-  $top: number;
-  $skip: number;
-  $count: boolean;
-  $apply: any;
-  $expand: string | number;
-  $orderby: string;
-  $format: string;
-}
 
 export default function({
-  select,
+  select: $select,
+  search: $search,
+  top: $top,
+  skip: $skip,
+  format: $format,
   filter,
-  search,
-  // groupBy,
   transform,
   orderBy,
-  top,
-  skip,
   key,
   count,
   expand,
   action,
   func,
-  format,
 }: Partial<QueryOptions> = {}) {
   let path = '';
-  const params: Partial<QueryParams> = {};
 
-  if (select) {
-    params.$select = select;
-  }
-
-  if (filter || count instanceof Object) {
-    const builtFilter = buildFilter(count instanceof Object ? count : filter);
-    if (builtFilter !== undefined) {
-      params.$filter = builtFilter;
-    }
-  }
-
-  if (search) {
-    params.$search = search;
-  }
-
-  if (transform) {
-    const builtTransforms = buildTransforms(transform);
-    if (builtTransforms !== undefined) {
-      params.$apply = builtTransforms;
-    }
-  }
-
-  if (top) {
-    params.$top = top;
-  }
-
-  if (skip) {
-    params.$skip = skip;
-  }
+  const params: any = {
+    $filter:
+      (filter || count instanceof Object) &&
+      buildFilter(count instanceof Object ? count : filter),
+    $apply: transform && buildTransforms(transform),
+    $expand: expand && buildExpand(expand),
+    $orderby: orderBy && buildOrderBy(orderBy),
+  };
 
   if (key) {
     if (typeof key === 'object') {
@@ -159,165 +123,161 @@ export default function({
     }
   }
 
-  if (expand) {
-    params.$expand = buildExpand(expand);
-  }
-
-  if (orderBy) {
-    params.$orderby = buildOrderBy(orderBy);
-  }
-
-  if (format) {
-    params.$format = format;
-  }
-
-  return buildUrl(path, params);
+  return buildUrl(path, { $select, $search, $top, $skip, $format, ...params });
 }
 
 function buildFilter(
   filters: Filter = {},
   propPrefix = ''
 ): undefined | string {
-  if (filters == null) {
-    // ignore `null` and `undefined` filters (useful for conditionally applied filters)
-    return;
-  } else if (typeof filters === 'string') {
-    // Use raw filter string
-    return filters;
-  } else if (Array.isArray(filters)) {
-    const builtFilters = filters
-      .map(f => buildFilter(f, propPrefix))
-      .filter(f => f !== undefined);
-    if (builtFilters.length) {
-      return `${builtFilters.map(f => `(${f})`).join(` and `)}`;
-    }
-  } else if (typeof filters === 'object') {
-    const filtersArray = Object.keys(filters).reduce(
-      (result: any[], filterKey) => {
-        const value = filters[filterKey];
-        let propName = '';
-        if (propPrefix) {
-          if (INDEXOF_REGEX.test(filterKey)) {
-            propName = filterKey.replace(INDEXOF_REGEX, `(${propPrefix}/$1)`);
-          } else if (FUNCTION_REGEX.test(filterKey)) {
-            propName = filterKey.replace(FUNCTION_REGEX, `(${propPrefix}/$1)`);
+  let filterExpr;
+  if (filters) {
+    if (typeof filters === 'string') {
+      // Use raw filter string
+      filterExpr = filters;
+    } else if (Array.isArray(filters)) {
+      filterExpr = filters
+        .reduce((acc: string[], filter) => {
+          const builtFilter = buildFilter(filter, propPrefix);
+          if (builtFilter !== undefined) {
+            acc.push(`(${builtFilter})`);
+          }
+          return acc;
+        }, [])
+        .join(' and ');
+    } else if (typeof filters === 'object') {
+      const filtersArray = Object.keys(filters).reduce(
+        (result: any[], filterKey) => {
+          const value = filters[filterKey];
+          let propName = '';
+          if (propPrefix) {
+            if (INDEXOF_REGEX.test(filterKey)) {
+              propName = filterKey.replace(INDEXOF_REGEX, `(${propPrefix}/$1)`);
+            } else if (FUNCTION_REGEX.test(filterKey)) {
+              propName = filterKey.replace(
+                FUNCTION_REGEX,
+                `(${propPrefix}/$1)`
+              );
+            } else {
+              propName = `${propPrefix}/${filterKey}`;
+            }
           } else {
-            propName = `${propPrefix}/${filterKey}`;
+            propName = filterKey;
           }
-        } else {
-          propName = filterKey;
-        }
 
-        if (
-          ['number', 'string', 'boolean'].indexOf(typeof value) !== -1 ||
-          value instanceof Date ||
-          value === null
-        ) {
-          // Simple key/value handled as equals operator
-          result.push(`${propName} eq ${handleValue(value)}`);
-        } else if (Array.isArray(value)) {
-          const op = filterKey;
-          const builtFilters = value
-            .map(v => buildFilter(v, propPrefix))
-            .filter(f => f !== undefined)
-            .map(f => (LOGICAL_OPERATORS.indexOf(op) !== -1 ? `(${f})` : f));
-          if (builtFilters.length) {
-            if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
-              if (builtFilters.length) {
-                if (op === 'not') {
-                  result.push(parseNot(builtFilters));
-                } else {
-                  result.push(`(${builtFilters.join(` ${op} `)})`);
-                }
-              }
-            } else {
-              result.push(builtFilters.join(` ${op} `));
-            }
-          }
-        } else if (LOGICAL_OPERATORS.indexOf(propName) !== -1) {
-          const op = propName;
-          const builtFilters = Object.keys(value).map(valueKey =>
-            buildFilter({ [valueKey]: value[valueKey] })
-          );
-          if (builtFilters.length) {
-            if (op === 'not') {
-              result.push(parseNot(builtFilters));
-            } else {
-              result.push(`${builtFilters.join(` ${op} `)}`);
-            }
-          }
-        } else if (value instanceof Object) {
-          if ('type' in value) {
+          if (
+            ['number', 'string', 'boolean'].indexOf(typeof value) !== -1 ||
+            value instanceof Date ||
+            value === null
+          ) {
+            // Simple key/value handled as equals operator
             result.push(`${propName} eq ${handleValue(value)}`);
-          } else {
-            const operators = Object.keys(value);
-            operators.forEach(op => {
-              if (COMPARISON_OPERATORS.indexOf(op) !== -1) {
-                result.push(`${propName} ${op} ${handleValue(value[op])}`);
-              } else if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
-                if (Array.isArray(value[op])) {
-                  result.push(
-                    value[op]
-                      .map((v: any) => '(' + buildFilter(v, propName) + ')')
-                      .join(` ${op} `)
-                  );
-                } else {
-                  result.push('(' + buildFilter(value[op], propName) + ')');
+          } else if (Array.isArray(value)) {
+            const op = filterKey;
+            const builtFilters = value
+              .map(v => buildFilter(v, propPrefix))
+              .filter(f => f !== undefined)
+              .map(f => (LOGICAL_OPERATORS.indexOf(op) !== -1 ? `(${f})` : f));
+            if (builtFilters.length) {
+              if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
+                if (builtFilters.length) {
+                  if (op === 'not') {
+                    result.push(parseNot(builtFilters));
+                  } else {
+                    result.push(`(${builtFilters.join(` ${op} `)})`);
+                  }
                 }
-              } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
-                const lambaParameter = filterKey.toLowerCase();
-                const filter = buildFilter(value[op], lambaParameter);
-
-                if (filter !== undefined) {
-                  // Do not apply collection filter if undefined (ex. ignore `Foo: { any: {} }`)
-                  result.push(`${propName}/${op}(${lambaParameter}:${filter})`);
-                }
-              } else if (op === 'in') {
-                const resultingValues = Array.isArray(value[op])
-                  ? // Convert `{ Prop: { in: [1,2,3] } }` to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
-                    value[op]
-                  : // Convert `{ Prop: { in: [{type: type, value: 1},{type: type, value: 2},{type: type, value: 3}] } }`
-                    // to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
-                    value[op].value.map((typedValue: any) => ({
-                      type: value[op].type,
-                      value: typedValue,
-                    }));
-
-                result.push(
-                  '(' +
-                    resultingValues
-                      .map((v: any) => `${propName} eq ${handleValue(v)}`)
-                      .join(' or ') +
-                    ')'
-                );
-              } else if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
-                // Simple boolean functions (startswith, endswith, contains)
-                result.push(`${op}(${propName},${handleValue(value[op])})`);
               } else {
-                // Nested property
-                const filter = buildFilter(value, propName);
-                if (filter) {
-                  result.push(filter);
-                }
+                result.push(builtFilters.join(` ${op} `));
               }
-            });
+            }
+          } else if (LOGICAL_OPERATORS.indexOf(propName) !== -1) {
+            const op = propName;
+            const builtFilters = Object.keys(value).map(valueKey =>
+              buildFilter({ [valueKey]: value[valueKey] })
+            );
+            if (builtFilters.length) {
+              if (op === 'not') {
+                result.push(parseNot(builtFilters));
+              } else {
+                result.push(`${builtFilters.join(` ${op} `)}`);
+              }
+            }
+          } else if (value instanceof Object) {
+            if ('type' in value) {
+              result.push(`${propName} eq ${handleValue(value)}`);
+            } else {
+              const operators = Object.keys(value);
+              operators.forEach(op => {
+                if (COMPARISON_OPERATORS.indexOf(op) !== -1) {
+                  result.push(`${propName} ${op} ${handleValue(value[op])}`);
+                } else if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
+                  if (Array.isArray(value[op])) {
+                    result.push(
+                      value[op]
+                        .map((v: any) => '(' + buildFilter(v, propName) + ')')
+                        .join(` ${op} `)
+                    );
+                  } else {
+                    result.push('(' + buildFilter(value[op], propName) + ')');
+                  }
+                } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
+                  const lambaParameter = filterKey.toLowerCase();
+                  const filter = buildFilter(value[op], lambaParameter);
+
+                  if (filter /*  !== undefined */) {
+                    // Do not apply collection filter if undefined (ex. ignore `Foo: { any: {} }`)
+                    result.push(
+                      `${propName}/${op}(${lambaParameter}:${filter})`
+                    );
+                  }
+                } else if (op === 'in') {
+                  const resultingValues = Array.isArray(value[op])
+                    ? // Convert `{ Prop: { in: [1,2,3] } }` to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
+                      value[op]
+                    : // Convert `{ Prop: { in: [{type: type, value: 1},{type: type, value: 2},{type: type, value: 3}] } }`
+                      // to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
+                      value[op].value.map((typedValue: any) => ({
+                        type: value[op].type,
+                        value: typedValue,
+                      }));
+
+                  result.push(
+                    '(' +
+                      resultingValues
+                        .map((v: any) => `${propName} eq ${handleValue(v)}`)
+                        .join(' or ') +
+                      ')'
+                  );
+                } else if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
+                  // Simple boolean functions (startswith, endswith, contains)
+                  result.push(`${op}(${propName},${handleValue(value[op])})`);
+                } else {
+                  // Nested property
+                  const filter = buildFilter(value, propName);
+                  if (filter) {
+                    result.push(filter);
+                  }
+                }
+              });
+            }
+          } else if (value === undefined) {
+            // Ignore/omit filter if value is `undefined`
+          } else {
+            throw new Error(`Unexpected value type: ${value}`);
           }
-        } else if (value === undefined) {
-          // Ignore/omit filter if value is `undefined`
-        } else {
-          throw new Error(`Unexpected value type: ${value}`);
-        }
 
-        return result;
-      },
-      []
-    );
+          return result;
+        },
+        []
+      );
 
-    return filtersArray.join(' and ') || undefined;
-  } else {
-    throw new Error(`Unexpected filters type: ${filters}`);
+      filterExpr = filtersArray.join(' and ') || undefined;
+    } else {
+      throw new Error(`Unexpected filters type: ${filters}`);
+    }
   }
-  return undefined;
+  return filterExpr;
 }
 
 function escapeIllegalChars(string: string) {
@@ -501,18 +461,14 @@ function buildOrderBy(
   return undefined;
 }
 
-function buildUrl(path: string, params: { [key: string]: any }): string {
-  if (Object.keys(params).length) {
-    return (
-      path +
-      '?' +
-      Object.keys(params)
-        .map(key => `${key}=${params[key]}`)
-        .join('&')
-    );
-  } else {
-    return path;
+function buildUrl(path: string, params: PlainObject): string {
+  const queries: string[] = [];
+  for (const key of Object.getOwnPropertyNames(params)) {
+    if (params[key]) {
+      queries.push(`${key}=${params[key]}`);
+    }
   }
+  return queries.length ? `${path}?${queries.join('&')}` : path;
 }
 
 function parseNot(builtFilters: Array<string | undefined>): string | string[] {
