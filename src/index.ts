@@ -15,13 +15,8 @@ const INDEXOF_REGEX = /(?!indexof)\((\w+)\)/;
 
 export type PlainObject = { [property: string]: any };
 export type Filter = string | PlainObject | Array<string | PlainObject>;
-export type NestedExpandOptions = {
-  [key: string]: Partial<ExpandQueryOptions>;
-};
-export type Expand =
-  | string
-  | NestedExpandOptions
-  | Array<string | NestedExpandOptions>;
+export type NestedExpandOptions = { [key: string]: Partial<ExpandQueryOptions>; };
+export type Expand = string | NestedExpandOptions | Array<string | NestedExpandOptions>;
 
 export interface ExpandQueryOptions {
   select: string | string[];
@@ -45,7 +40,7 @@ export interface QueryOptions extends ExpandQueryOptions {
   format: string;
 }
 
-export default function({
+export default function ({
   select: $select,
   search: $search,
   top: $top,
@@ -63,9 +58,7 @@ export default function({
   let path = '';
 
   const params: any = {
-    $filter:
-      (filter || count instanceof Object) &&
-      buildFilter(count instanceof Object ? count : filter),
+    $filter: (filter || count instanceof Object) && buildFilter(count instanceof Object ? count : filter),
     $apply: transform && buildTransforms(transform),
     $expand: expand && buildExpand(expand),
     $orderby: orderBy && buildOrderBy(orderBy),
@@ -126,10 +119,7 @@ export default function({
   return buildUrl(path, { $select, $search, $top, $skip, $format, ...params });
 }
 
-function buildFilter(
-  filters: Filter = {},
-  propPrefix = ''
-): undefined | string {
+function buildFilter(filters: Filter = {}, propPrefix = ''): undefined | string {
   let filterExpr;
   if (filters) {
     if (typeof filters === 'string') {
@@ -182,7 +172,7 @@ function buildFilter(
               if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
                 if (builtFilters.length) {
                   if (op === 'not') {
-                    result.push(parseNot(builtFilters));
+                    result.push(parseNot(builtFilters as string[]));
                   } else {
                     result.push(`(${builtFilters.join(` ${op} `)})`);
                   }
@@ -198,7 +188,7 @@ function buildFilter(
             );
             if (builtFilters.length) {
               if (op === 'not') {
-                result.push(parseNot(builtFilters));
+                result.push(parseNot(builtFilters as string[]));
               } else {
                 result.push(`${builtFilters.join(` ${op} `)}`);
               }
@@ -234,20 +224,20 @@ function buildFilter(
                 } else if (op === 'in') {
                   const resultingValues = Array.isArray(value[op])
                     ? // Convert `{ Prop: { in: [1,2,3] } }` to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
-                      value[op]
+                    value[op]
                     : // Convert `{ Prop: { in: [{type: type, value: 1},{type: type, value: 2},{type: type, value: 3}] } }`
-                      // to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
-                      value[op].value.map((typedValue: any) => ({
-                        type: value[op].type,
-                        value: typedValue,
-                      }));
+                    // to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
+                    value[op].value.map((typedValue: any) => ({
+                      type: value[op].type,
+                      value: typedValue,
+                    }));
 
                   result.push(
                     '(' +
-                      resultingValues
-                        .map((v: any) => `${propName} eq ${handleValue(v)}`)
-                        .join(' or ') +
-                      ')'
+                    resultingValues
+                      .map((v: any) => `${propName} eq ${handleValue(v)}`)
+                      .join(' or ') +
+                    ')'
                   );
                 } else if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
                   // Simple boolean functions (startswith, endswith, contains)
@@ -356,8 +346,8 @@ function buildExpand(expands: Expand): string | undefined {
             key === 'filter'
               ? buildFilter(expands[key])
               : key.toLowerCase() === 'orderby'
-              ? buildOrderBy(expands[key] as any)
-              : buildExpand(expands[key] as any);
+                ? buildOrderBy(expands[key] as any)
+                : buildExpand(expands[key] as any);
           return `$${key.toLowerCase()}=${value}`;
         })
         .join(';');
@@ -446,22 +436,12 @@ function buildGroupBy(groupBy: GroupBy) {
   return result;
 }
 
-function buildOrderBy(
-  orderBy: string | string[]
-): string /* | number */ | undefined {
-  /*   if (typeof orderBy === 'number') {
-    return orderBy;
-  } else  */ if (
-    typeof orderBy === 'string'
-  ) {
-    return orderBy;
-  } else if (Array.isArray(orderBy)) {
-    return `${orderBy.map(o => buildOrderBy(o)).join(',')}`;
-  }
-  return undefined;
+function buildOrderBy(orderBy: string | string[]): string {
+  return Array.isArray(orderBy) ? orderBy.map(o => buildOrderBy(o)).join(',') : orderBy;
 }
 
 function buildUrl(path: string, params: PlainObject): string {
+  // This can be refactored using URL API. But IE does not support it.
   const queries: string[] = [];
   for (const key of Object.getOwnPropertyNames(params)) {
     if (params[key]) {
@@ -471,16 +451,11 @@ function buildUrl(path: string, params: PlainObject): string {
   return queries.length ? `${path}?${queries.join('&')}` : path;
 }
 
-function parseNot(builtFilters: Array<string | undefined>): string | string[] {
+function parseNot(builtFilters: string[]): string {
   if (builtFilters.length > 1) {
     return `not( ${builtFilters.join(' and ')})`;
   } else {
-    return (builtFilters as string[]).map(filter => {
-      if (filter.charAt(0) === '(') {
-        return '(not '.concat(filter.substr(1));
-      } else {
-        return 'not '.concat(filter);
-      }
-    });
+    const filter = builtFilters[0] as string;
+    return filter.charAt(0) === '(' ? `(not ${filter.substr(1)}` : `not ${filter}`;
   }
 }
