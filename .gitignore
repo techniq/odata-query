@@ -15,3 +15,9 @@ dist
 .env
 npm-debug.log
 yarn-error.log
+
+
+*.log
+.rts2_cache_cjs
+.rts2_cache_es
+.rts2_cache_umd
