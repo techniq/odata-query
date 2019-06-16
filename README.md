@@ -32,7 +32,7 @@ See [tests](src/index.test.js) for examples as well
     - [Explicit operator](#explicit-operator)
   - [Collection operators](#collection-operators) - `any`, `all`
     - [Implied and with an object or array of objects](#implied-and)
-    - [Explicit operator (`and`, `or`)](#explicit-operator-and-or)
+    - [Explicit operator (`and`, `or`, and `not`)](#explicit-operator-and-or)
   - [Functions](#functions)
     - [String functions returning boolean](#string-functions-returning-boolean)
     - [Functions returning non-boolean values (string, int)](#functions-returning-non-boolean-values-string-int)
@@ -111,7 +111,21 @@ buildQuery({ filter })
 => '?$filter=SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, "foo")'
 ```
 
-Supported operators: `and`, `or`
+```js
+const filter = {
+  not: {
+    and:[
+      {SomeProp: 1}, 
+      {AnotherProp: 2}
+    ]
+  }
+};
+
+buildQuery({ filter })
+=> '?$filter=(not (SomeProp eq 1) and (AnotherProp eq 2))'
+```
+
+Supported operators: `and`, `or`, and `not`.
 
 #### Collection operators
 ##### Implied `and`
@@ -146,7 +160,7 @@ buildQuery({ filter })
 => '?$filter=ItemsProp/any(i:i/SomeProp eq 1 and i/AnotherProp eq 2)'
 ```
 
-##### Explicit operator (`and`, `or`)
+##### Explicit operator (`and`, `or`, and `not`)
 ```js
 const filter = {
   ItemsProp: {
@@ -161,6 +175,23 @@ const filter = {
 
 buildQuery({ filter })
 => '?$filter=ItemsProp/any(i:(i/SomeProp eq 1 or i/AnotherProp eq 2)'
+```
+```js
+const filter = {
+  not: {
+    ItemsProp: {
+      any: {
+        or: [
+          { SomeProp: 1 },
+          { AnotherProp: 2},
+        ]
+      }
+    }
+  }
+};
+
+buildQuery({ filter })
+=> '?$filter=not ItemsProp/any(i:((i/SomeProp eq 1) or (i/AnotherProp eq 2)))'
 ```
 
 Supported operators: `any`, `all`
@@ -210,6 +241,14 @@ const filter = { "someProp": { eq: { type: 'guid', value: 'cd5977c2-4a64-42de-b2
 buildQuery({ filter })
 => "?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd"
 ```
+
+Binary:
+```js
+const filter = { "someProp": { eq: { type: 'binary', value: 'YmluYXJ5RGF0YQ==' } } };
+buildQuery({ filter })
+=> "?$filter=someProp eq binary'YmluYXJ5RGF0YQ=='"
+```
+Note that as per OData specification, binary data is transmitted as a base64 encoded string. Refer to [Primitive Types in JSON Format](https://www.odata.org/documentation/odata-version-2-0/json-format/), and [binary representation](https://www.odata.org/documentation/odata-version-2-0/overview/).
 
 Other types coming soon
 
