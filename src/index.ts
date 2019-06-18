@@ -225,13 +225,13 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): undefined | string 
                     result.push('(' + buildFilter(value[op], propName) + ')');
                   }
                 } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
-                  const lambaParameter = filterKey.toLowerCase();
-                  const filter = buildFilter(value[op], lambaParameter);
+                  const lambdaParameter = filterKey.toLowerCase();
+                  const filter = buildFilter(value[op], lambdaParameter);
 
                   if (filter /*  !== undefined */) {
                     // Do not apply collection filter if undefined (ex. ignore `Foo: { any: {} }`)
                     result.push(
-                      `${propName}/${op}(${lambaParameter}:${filter})`
+                      `${propName}/${op}(${lambdaParameter}:${filter})`
                     );
                   }
                 } else if (op === 'in') {
@@ -376,35 +376,28 @@ function buildExpand(expands: Expand): string | undefined {
   return undefined;
 }
 
-function buildTransforms(transforms: PlainObject | PlainObject[]) {
+function buildTransforms(transforms: Transform | Transform[]) {
   // Wrap single object an array for simplified processing
   const transformsArray = Array.isArray(transforms) ? transforms : [transforms];
 
-  const transformsResult = transformsArray.reduce((result, transform) => {
-    Object.keys(transform).forEach(transformKey => {
-      const transformValue = transform[transformKey];
-      switch (transformKey) {
-        case 'aggregate':
-          result.push(`aggregate(${buildAggregate(transformValue)})`);
-          break;
-        case 'filter':
-          const builtFilter = buildFilter(transformValue);
-          if (builtFilter !== undefined) {
-            result.push(`filter(${buildFilter(transformValue)})`);
-          }
-          break;
-        case 'groupby': // support both cases
-        case 'groupBy':
-          result.push(`groupby(${buildGroupBy(transformValue)})`);
-          break;
-        default:
-          // TODO: support as many of the following:
-          //   topcount, topsum, toppercent,
-          //   bottomsum, bottomcount, bottompercent,
-          //   identity, concat, expand, search, compute, isdefined
-          throw new Error(`Unsupported transform: '${transformKey}'`);
+  const transformsResult = transformsArray.reduce((result: string[], transform) => {
+    const { aggregate, filter, groupBy, ...rest } = transform;
+
+    // TODO: support as many of the following:
+    //   topcount, topsum, toppercent,
+    //   bottomsum, bottomcount, bottompercent,
+    //   identity, concat, expand, search, compute, isdefined
+    const unsupportedKeys = Object.keys(rest);
+    if (unsupportedKeys.length) { throw new Error(`Unsupported transform(s): ${unsupportedKeys}`); }
+
+    if (aggregate) { result.push(`aggregate(${buildAggregate(aggregate)})`); }
+    if (filter) {
+      const builtFilter = buildFilter(filter);
+      if (builtFilter) {
+        result.push(`filter(${buildFilter(builtFilter)})`);
       }
-    });
+    }
+    if (groupBy) { result.push(`groupby(${buildGroupBy(groupBy)})`); }
 
     return result;
   }, []);
@@ -438,7 +431,7 @@ function buildAggregate(aggregate: Aggregate | Aggregate[]) {
 }
 
 function buildGroupBy(groupBy: GroupBy) {
-  if (groupBy.properties === undefined) {
+  if (!groupBy.properties) {
     throw new Error(`'properties' property required for groupBy`);
   }
 
