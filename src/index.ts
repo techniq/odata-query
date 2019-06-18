@@ -17,6 +17,14 @@ export type PlainObject = { [property: string]: any };
 export type Filter = string | PlainObject | Array<string | PlainObject>;
 export type NestedExpandOptions = { [key: string]: Partial<ExpandQueryOptions>; };
 export type Expand = string | NestedExpandOptions | Array<string | NestedExpandOptions>;
+export enum StandardAggregateMethods {
+  sum = "sum",
+  min = "min",
+  max = "max",
+  average = "average",
+  countdistinct = "countdistinct",
+}
+export type Aggregate = { [propertyName: string]: { with: StandardAggregateMethods, as: string } } | string;
 
 export interface ExpandQueryOptions {
   select: string | string[];
@@ -25,9 +33,14 @@ export interface ExpandQueryOptions {
   top: number;
   expand: Expand;
 }
+export interface Transform {
+  aggregate?: Aggregate | Aggregate[];
+  filter?: Filter;
+  groupBy?: GroupBy;
+}
 export interface GroupBy {
   properties: string[];
-  transform?: any;
+  transform?: Transform;
 }
 export interface QueryOptions extends ExpandQueryOptions {
   search: string;
@@ -399,25 +412,27 @@ function buildTransforms(transforms: PlainObject | PlainObject[]) {
   return transformsResult.join('/') || undefined;
 }
 
-function buildAggregate(aggregate: any) {
+function buildAggregate(aggregate: Aggregate | Aggregate[]) {
   // Wrap single object in an array for simplified processing
   const aggregateArray = Array.isArray(aggregate) ? aggregate : [aggregate];
 
   return aggregateArray
     .map(aggregateItem => {
-      return Object.keys(aggregateItem).map(aggregateKey => {
-        const aggregateValue = aggregateItem[aggregateKey];
+      return typeof aggregateItem === "string"
+        ? aggregateItem
+        : Object.keys(aggregateItem).map(aggregateKey => {
+          const aggregateValue = aggregateItem[aggregateKey];
 
-        // TODO: Are these always required?  Can/should we default them if so?
-        if (aggregateValue.with === undefined) {
-          throw new Error(`'with' property required for '${aggregateKey}'`);
-        }
-        if (aggregateValue.as === undefined) {
-          throw new Error(`'as' property required for '${aggregateKey}'`);
-        }
+          // TODO: Are these always required?  Can/should we default them if so?
+          if (!aggregateValue.with) {
+            throw new Error(`'with' property required for '${aggregateKey}'`);
+          }
+          if (!aggregateValue.as) {
+            throw new Error(`'as' property required for '${aggregateKey}'`);
+          }
 
-        return `${aggregateKey} with ${aggregateValue.with} as ${aggregateValue.as}`;
-      });
+          return `${aggregateKey} with ${aggregateValue.with} as ${aggregateValue.as}`;
+        });
     })
     .join(',');
 }

@@ -840,6 +840,36 @@ describe('transform', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('custom aggregation as string', () => {
+    const transform = {
+      aggregate: "Forecast",
+    };
+    const expected = '?$apply=aggregate(Forecast)';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+
+  it('multiple aggregations with same property as array', () => {
+    const transform = [
+      {
+        aggregate: [
+          "Forecast",
+          {
+            Amount: {
+              with: 'max',
+              as: 'Max',
+            },
+          },
+        ],
+      },
+    ];
+    const expected =
+      '?$apply=aggregate(Forecast,Amount with max as Max)';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
   it('simple filter', () => {
     const transform = [
       {
