@@ -132,8 +132,8 @@ export default function ({
   return buildUrl(path, { $select, $search, $top, $skip, $format, ...params });
 }
 
-function buildFilter(filters: Filter = {}, propPrefix = ''): undefined | string {
-  let filterExpr;
+function buildFilter(filters: Filter = {}, propPrefix = ''): string {
+  let filterExpr = "";
   if (filters) {
     if (typeof filters === 'string') {
       // Use raw filter string
@@ -142,7 +142,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): undefined | string 
       filterExpr = filters
         .reduce((acc: string[], filter) => {
           const builtFilter = buildFilter(filter, propPrefix);
-          if (builtFilter !== undefined) {
+          if (builtFilter) {
             acc.push(`(${builtFilter})`);
           }
           return acc;
@@ -179,7 +179,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): undefined | string 
             const op = filterKey;
             const builtFilters = value
               .map(v => buildFilter(v, propPrefix))
-              .filter(f => f !== undefined)
+              .filter(f => f)
               .map(f => (LOGICAL_OPERATORS.indexOf(op) !== -1 ? `(${f})` : f));
             if (builtFilters.length) {
               if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
@@ -275,7 +275,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): undefined | string 
         []
       );
 
-      filterExpr = filtersArray.join(' and ') || undefined;
+      filterExpr = filtersArray.join(' and ');
     } else {
       throw new Error(`Unexpected filters type: ${filters}`);
     }
@@ -319,7 +319,7 @@ function handleValue(value: any) {
   }
 }
 
-function buildExpand(expands: Expand): string | undefined {
+function buildExpand(expands: Expand): string {
   if (typeof expands === 'number') {
     return expands;
   } else if (typeof expands === 'string') {
@@ -359,8 +359,8 @@ function buildExpand(expands: Expand): string | undefined {
             key === 'filter'
               ? buildFilter(expands[key])
               : key.toLowerCase() === 'orderby'
-                ? buildOrderBy(expands[key] as any)
-                : buildExpand(expands[key] as any);
+                ? buildOrderBy(expands[key] as string | string[])
+                : buildExpand(expands[key] as Expand);
           return `$${key.toLowerCase()}=${value}`;
         })
         .join(';');
@@ -373,7 +373,7 @@ function buildExpand(expands: Expand): string | undefined {
         .join(',');
     }
   }
-  return undefined;
+  return "";
 }
 
 function buildTransforms(transforms: Transform | Transform[]) {
