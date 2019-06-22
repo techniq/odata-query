@@ -47,7 +47,7 @@ export interface QueryOptions extends ExpandQueryOptions {
   transform: PlainObject | PlainObject[];
   skip: number;
   key: string | number | PlainObject;
-  count: boolean | PlainObject;
+  count: boolean | Filter;
   action: string;
   func: string | { [functionName: string]: { [parameterName: string]: any } };
   format: string;
@@ -133,34 +133,33 @@ export default function ({
 }
 
 function buildFilter(filters: Filter = {}, propPrefix = ''): string {
-  let filterExpr = "";
-  if (filters) {
-    if (typeof filters === 'string') {
+  return (Array.isArray(filters) ? filters : [filters])
+    .reduce((acc: string[], filter) => {
+      if (filter) {
+        const builtFilter = buildFilterCore(filter, propPrefix);
+        if (builtFilter) {
+          acc.push(builtFilter);
+        }
+      }
+      return acc;
+    }, [])
+    .join(' and ');
+
+  function buildFilterCore(filter: Filter = {}, propPrefix = '') {
+    let filterExpr = "";
+    if (typeof filter === 'string') {
       // Use raw filter string
-      filterExpr = filters;
-    } else if (Array.isArray(filters)) {
-      filterExpr = filters
-        .reduce((acc: string[], filter) => {
-          const builtFilter = buildFilter(filter, propPrefix);
-          if (builtFilter) {
-            acc.push(`(${builtFilter})`);
-          }
-          return acc;
-        }, [])
-        .join(' and ');
-    } else if (typeof filters === 'object') {
-      const filtersArray = Object.keys(filters).reduce(
+      filterExpr = filter;
+    } else if (filter && typeof filter === 'object') {
+      const filtersArray = Object.keys(filter).reduce(
         (result: any[], filterKey) => {
-          const value = filters[filterKey];
+          const value = (filter as any)[filterKey];
           let propName = '';
           if (propPrefix) {
             if (INDEXOF_REGEX.test(filterKey)) {
               propName = filterKey.replace(INDEXOF_REGEX, `(${propPrefix}/$1)`);
             } else if (FUNCTION_REGEX.test(filterKey)) {
-              propName = filterKey.replace(
-                FUNCTION_REGEX,
-                `(${propPrefix}/$1)`
-              );
+              propName = filterKey.replace(FUNCTION_REGEX, `(${propPrefix}/$1)`);
             } else {
               propName = `${propPrefix}/${filterKey}`;
             }
@@ -197,7 +196,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
           } else if (LOGICAL_OPERATORS.indexOf(propName) !== -1) {
             const op = propName;
             const builtFilters = Object.keys(value).map(valueKey =>
-              buildFilter({ [valueKey]: value[valueKey] })
+              buildFilterCore({ [valueKey]: value[valueKey] })
             );
             if (builtFilters.length) {
               if (op === 'not') {
@@ -218,22 +217,15 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
                   if (Array.isArray(value[op])) {
                     result.push(
                       value[op]
-                        .map((v: any) => '(' + buildFilter(v, propName) + ')')
+                        .map((v: any) => '(' + buildFilterCore(v, propName) + ')')
                         .join(` ${op} `)
                     );
                   } else {
-                    result.push('(' + buildFilter(value[op], propName) + ')');
+                    result.push('(' + buildFilterCore(value[op], propName) + ')');
                   }
                 } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
-                  const lambdaParameter = filterKey.toLowerCase();
-                  const filter = buildFilter(value[op], lambdaParameter);
-
-                  if (filter /*  !== undefined */) {
-                    // Do not apply collection filter if undefined (ex. ignore `Foo: { any: {} }`)
-                    result.push(
-                      `${propName}/${op}(${lambdaParameter}:${filter})`
-                    );
-                  }
+                  const collectionClause = buildCollectionClause(filterKey.toLowerCase(), value[op], op, propName);
+                  if (collectionClause) { result.push(collectionClause); }
                 } else if (op === 'in') {
                   const resultingValues = Array.isArray(value[op])
                     ? // Convert `{ Prop: { in: [1,2,3] } }` to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
@@ -257,7 +249,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
                   result.push(`${op}(${propName},${handleValue(value[op])})`);
                 } else {
                   // Nested property
-                  const filter = buildFilter(value, propName);
+                  const filter = buildFilterCore(value, propName);
                   if (filter) {
                     result.push(filter);
                   }
@@ -276,11 +268,24 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
       );
 
       filterExpr = filtersArray.join(' and ');
-    } else {
-      throw new Error(`Unexpected filters type: ${filters}`);
-    }
+    } /* else {
+        throw new Error(`Unexpected filters type: ${filter}`);
+      } */
+    return filterExpr;
   }
-  return filterExpr;
+
+  function buildCollectionClause(lambdaParameter: string, value: any, op: string, propName: string) {
+    let clause = "";
+    if (value) {
+      // normalize {any:[{prop1: 1}, {prop2: 1}]} --> {any:{prop1: 1, prop2: 1}}; same for 'all'
+      const filter = buildFilterCore(
+        Array.isArray(value)
+          ? value.reduce((acc, item) => ({ ...acc, ...item }), {})
+          : value, lambdaParameter);
+      clause = `${propName}/${op}(${filter ? `${lambdaParameter}:${filter}` : ""})`;
+    }
+    return clause;
+  }
 }
 
 function escapeIllegalChars(string: string) {

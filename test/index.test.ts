@@ -34,7 +34,7 @@ describe('filter', () => {
         "startswith(Name, 'R')",
       ];
       const expected =
-        "?$filter=(SomeProp eq 1) and (AnotherProp eq 2) and (startswith(Name, 'R'))";
+        "?$filter=SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, 'R')";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -60,10 +60,10 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should convert "in" operator to "or" statement and wrap in double parens when using an array', () => {
+    it('converting "in" operator to "or" statement also works when using in an array', () => {
       const filter = [{ SomeProp: { in: [1, 2, 3] }, AnotherProp: 4 }];
       const expected =
-        '?$filter=((SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3) and AnotherProp eq 4)';
+        '?$filter=(SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3) and AnotherProp eq 4';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -460,24 +460,24 @@ describe('filter', () => {
   });
 
   describe('collection operators', () => {
-    it('should ignore collection operator with an empty object of filters', () => {
+    it('should generate empty collection operator with an empty object of filters', () => {
       const filter = {
         Tasks: {
           any: {},
         },
       };
-      const expected = '';
+      const expected = '?$filter=Tasks/any()';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-    it('should ignore collection operator with an empty array of filters', () => {
+    it('should generate empty collection operator with an empty array of filters', () => {
       const filter = {
         Tasks: {
           any: [],
         },
       };
-      const expected = '';
+      const expected = '?$filter=Tasks/any()';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -515,7 +515,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        '?$filter=Tasks/any(tasks:(tasks/AssignedGroupId eq 1234) and (tasks/StatusId eq 300))';
+        '?$filter=Tasks/any(tasks:tasks/AssignedGroupId eq 1234 and tasks/StatusId eq 300)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -531,7 +531,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        '?$filter=Tasks/any(tasks:tasks/SubTasks/any(subtasks:(subtasks/AssignedGroupId eq 1234) and (subtasks/StatusId eq 300)))';
+        '?$filter=Tasks/any(tasks:tasks/SubTasks/any(subtasks:subtasks/AssignedGroupId eq 1234 and subtasks/StatusId eq 300))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -589,7 +589,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        "?$filter=Tasks/any(tasks:(tasks/CreatedBy/Name eq 'Sean Lynch' and tasks/StatusId eq 300))";
+        "?$filter=Tasks/any(tasks:tasks/CreatedBy/Name eq 'Sean Lynch' and tasks/StatusId eq 300)";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
