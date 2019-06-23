@@ -128,6 +128,31 @@ buildQuery({ filter })
 Supported operators: `and`, `or`, and `not`.
 
 #### Collection operators
+##### Empty `any`
+Using an empty object
+```js
+const filter = {
+  ItemsProp: {
+    any: {}
+  }
+};
+
+buildQuery({ filter })
+=> '?$filter=ItemsProp/any()'
+```
+
+or also as an empty array
+```js
+const filter = {
+  ItemsProp: {
+    any: []
+  }
+};
+
+buildQuery({ filter })
+=> '?$filter=ItemsProp/any()'
+```
+
 ##### Implied `and`
 
 Using an object
