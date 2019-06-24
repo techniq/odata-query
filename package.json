@@ -4,24 +4,24 @@
   "author": "Sean Lynch <techniq35@gmail.com>",
   "license": "MIT",
   "repository": "techniq/odata-query",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "main": "dist/index.js",
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-jest": "^20.0.3",
-    "babel-preset-env": "^1.5.2",
-    "jest": "^20.0.4",
-    "rimraf": "^2.6.1"
+    "@types/jest": "^24.0.15",
+    "jest": "^24.8.0",
+    "rimraf": "^2.6.3",
+    "ts-jest": "^24.0.2",
+    "tslib": "^1.10.0",
+    "typescript": "^3.5.2"
   },
-  "dependencies": {},
   "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc",
     "test": "jest",
-    "test-watch": "jest --watch",
-    "clean": "rimraf dist",
-    "prebuild": "npm run clean -s",
-    "build": "NODE_ENV=production babel src -d dist --ignore test.js",
+    "test-watch": "jest --watchAll",
     "preversion": "npm run build"
   }
 }

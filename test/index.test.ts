@@ -1,4 +1,4 @@
-import buildQuery from './';
+import buildQuery, { Expand } from '../src/index';
 
 it('should return an empty string by default', () => {
   expect(buildQuery()).toEqual('');
@@ -31,10 +31,10 @@ describe('filter', () => {
       const filter = [
         { SomeProp: 1 },
         { AnotherProp: 2 },
-        "startswith(Name, 'R')"
+        "startswith(Name, 'R')",
       ];
       const expected =
-        "?$filter=(SomeProp eq 1) and (AnotherProp eq 2) and (startswith(Name, 'R'))";
+        "?$filter=SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, 'R')";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -51,8 +51,8 @@ describe('filter', () => {
       const filter = {
         SomeNames: {
           contains: 'Bob',
-          in: ['Peter Newman', 'Bob Ross', 'Bobby Parker', 'Mike Bobson']
-        }
+          in: ['Peter Newman', 'Bob Ross', 'Bobby Parker', 'Mike Bobson'],
+        },
       };
       const expected =
         "?$filter=contains(SomeNames,'Bob') and (SomeNames eq 'Peter Newman' or SomeNames eq 'Bob Ross' or SomeNames eq 'Bobby Parker' or SomeNames eq 'Mike Bobson')";
@@ -60,10 +60,10 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should convert "in" operator to "or" statement and wrap in double parens when using an array', () => {
+    it('converting "in" operator to "or" statement also works when using in an array', () => {
       const filter = [{ SomeProp: { in: [1, 2, 3] }, AnotherProp: 4 }];
       const expected =
-        '?$filter=((SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3) and AnotherProp eq 4)';
+        '?$filter=(SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3) and AnotherProp eq 4';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -93,8 +93,8 @@ describe('filter', () => {
       const filter = {
         SomeProp: {
           NestedProp1: 1,
-          NestedProp2: 2
-        }
+          NestedProp2: 2,
+        },
       };
       const expected =
         '?$filter=(SomeProp/NestedProp1 eq 1 and SomeProp/NestedProp2 eq 2)';
@@ -107,9 +107,9 @@ describe('filter', () => {
         SomeProp: {
           and: {
             NestedProp1: 1,
-            NestedProp2: 2
-          }
-        }
+            NestedProp2: 2,
+          },
+        },
       };
       const expected =
         '?$filter=(SomeProp/NestedProp1 eq 1 and SomeProp/NestedProp2 eq 2)';
@@ -120,29 +120,63 @@ describe('filter', () => {
 
   describe('logical operators', () => {
     it('should handle simple logical operators (not) as an object', () => {
-      const filter = {and:[ {not: { FooProp: {'startswith': 'foo'}}},{not: { BarProp: {'startswith': 'bar'}}}, { FooBarProp: {'startswith': 'foobar'}}]};
-      const expected = '?$filter=((not startswith(FooProp,\'foo\')) and (not startswith(BarProp,\'bar\')) and (startswith(FooBarProp,\'foobar\')))';
+      const filter = {
+        and: [
+          { not: { FooProp: { startswith: 'foo' } } },
+          { not: { BarProp: { startswith: 'bar' } } },
+          { FooBarProp: { startswith: 'foobar' } },
+        ],
+      };
+      const expected =
+        "?$filter=((not startswith(FooProp,'foo')) and (not startswith(BarProp,'bar')) and (startswith(FooBarProp,'foobar')))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
     it('should handle logical operators (not) as an object', () => {
-      const filter = {and:[ {not: { FooProp: {'startswith': 'foo'}, BarProp: {'startswith': 'bar'}}}, { FooBarProp: {'startswith': 'bar'}}]};
-      const expected = '?$filter=((not( startswith(FooProp,\'foo\') and startswith(BarProp,\'bar\'))) and (startswith(FooBarProp,\'bar\')))';
+      const filter = {
+        and: [
+          {
+            not: {
+              FooProp: { startswith: 'foo' },
+              BarProp: { startswith: 'bar' },
+            },
+          },
+          { FooBarProp: { startswith: 'bar' } },
+        ],
+      };
+      const expected =
+        "?$filter=((not( startswith(FooProp,'foo') and startswith(BarProp,'bar'))) and (startswith(FooBarProp,'bar')))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
     it('should handle simple logical operators (not) as an array', () => {
-      const filter =  {not: [ {FooProp: {'startswith': 'foo'}},{BarProp: {'startswith': 'bar'}}] };
-      const expected = '?$filter=not( (startswith(FooProp,\'foo\')) and (startswith(BarProp,\'bar\')))';
+      const filter = {
+        not: [
+          { FooProp: { startswith: 'foo' } },
+          { BarProp: { startswith: 'bar' } },
+        ],
+      };
+      const expected =
+        "?$filter=not( (startswith(FooProp,'foo')) and (startswith(BarProp,'bar')))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
     it('should handle logical operators (not) as an array', () => {
-      const filter = {or:[ {not: [ {FooProp: {'startswith': 'foo'}}, {BarProp: {'startswith': 'bar'}}]}]};
-      const expected = '?$filter=((not( (startswith(FooProp,\'foo\')) and (startswith(BarProp,\'bar\')))))';
+      const filter = {
+        or: [
+          {
+            not: [
+              { FooProp: { startswith: 'foo' } },
+              { BarProp: { startswith: 'bar' } },
+            ],
+          },
+        ],
+      };
+      const expected =
+        "?$filter=((not( (startswith(FooProp,'foo')) and (startswith(BarProp,'bar')))))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -163,7 +197,7 @@ describe('filter', () => {
 
     it('should handle nested logical operators', () => {
       const filter = {
-        and: [{ SomeProp: 1 }, { or: [{ AnotherProp: 2 }, { ThirdProp: 3 }] }]
+        and: [{ SomeProp: 1 }, { or: [{ AnotherProp: 2 }, { ThirdProp: 3 }] }],
       };
       const expected =
         '?$filter=((SomeProp eq 1) and (((AnotherProp eq 2) or (ThirdProp eq 3))))';
@@ -179,7 +213,7 @@ describe('filter', () => {
     });
 
     it('should ignore implied logical operator with no filters', () => {
-      const filter = [];
+      const filter: any[] = [];
       const expected = '';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
@@ -251,10 +285,10 @@ describe('filter', () => {
           {
             and: {
               Prop2: 2,
-              Prop3: 3
-            }
-          }
-        ]
+              Prop3: 3,
+            },
+          },
+        ],
       };
       const expected = '?$filter=((Prop1 eq 1) or (Prop2 eq 2 and Prop3 eq 3))';
       const actual = buildQuery({ filter });
@@ -264,17 +298,17 @@ describe('filter', () => {
     it('should handle nested properties using "/" selectors', () => {
       const filter = {
         Prop1: {
-          NestedProp1: 1
+          NestedProp1: 1,
         },
         or: [
           {
             'Prop2/NestedProp2/DeeplyNestedProp2': 2,
-            'Prop3/NestedProp3': { ne: null }
+            'Prop3/NestedProp3': { ne: null },
           },
           {
-            'Prop4/NestedProp4/DeeplyNestedProp4': 4
-          }
-        ]
+            'Prop4/NestedProp4/DeeplyNestedProp4': 4,
+          },
+        ],
       };
       const expected =
         '?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop3/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))';
@@ -285,29 +319,29 @@ describe('filter', () => {
     it('should handle nested properties using objects', () => {
       const filter = {
         Prop1: {
-          NestedProp1: 1
+          NestedProp1: 1,
         },
         or: [
           {
             Prop2: {
               NestedProp2: {
-                DeeplyNestedProp2: 2
-              }
+                DeeplyNestedProp2: 2,
+              },
             },
             Prop3: {
               NestedProp3: {
-                ne: null
-              }
-            }
+                ne: null,
+              },
+            },
           },
           {
             Prop4: {
               NestedProp4: {
-                DeeplyNestedProp4: 4
-              }
-            }
-          }
-        ]
+                DeeplyNestedProp4: 4,
+              },
+            },
+          },
+        ],
       };
       const expected =
         '?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop3/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))';
@@ -318,19 +352,19 @@ describe('filter', () => {
     it('should handle more stuff jason stadler throws at it - not working', () => {
       const filter = {
         Prop1: {
-          NestedProp1: 1
+          NestedProp1: 1,
         },
         Prop2: {
           or: [
             {
               'NestedProp2/DeeplyNestedProp2': 2,
-              NestedProp3: { ne: null }
+              NestedProp3: { ne: null },
             },
             {
-              'NestedProp4/DeeplyNestedProp4': 4
-            }
-          ]
-        }
+              'NestedProp4/DeeplyNestedProp4': 4,
+            },
+          ],
+        },
       };
       const expected =
         '?$filter=Prop1/NestedProp1 eq 1 and (Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null) or (Prop2/NestedProp4/DeeplyNestedProp4 eq 4)';
@@ -341,17 +375,17 @@ describe('filter', () => {
     it('should handle nested logical operators and nested properties using "/" selectors', () => {
       const filter = {
         Prop1: {
-          NestedProp1: 1
+          NestedProp1: 1,
         },
         or: [
           {
             'Prop2/NestedProp2/DeeplyNestedProp2': 2,
-            'Prop2/NestedProp3': { ne: null }
+            'Prop2/NestedProp3': { ne: null },
           },
           {
-            'Prop4/NestedProp4/DeeplyNestedProp4': 4
-          }
-        ]
+            'Prop4/NestedProp4/DeeplyNestedProp4': 4,
+          },
+        ],
       };
       const expected =
         '?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))';
@@ -363,27 +397,27 @@ describe('filter', () => {
     it.skip('should handle nested logical operators and deeply nested properties on same property using objects (shorthand)', () => {
       const filter = {
         Prop1: {
-          NestedProp1: 1
+          NestedProp1: 1,
         },
         or: [
           {
             Prop2: {
               NestedProp2: {
-                DeeplyNestedProp2: 2
+                DeeplyNestedProp2: 2,
               },
               NestedProp3: {
-                ne: null
-              }
-            }
+                ne: null,
+              },
+            },
           },
           {
             Prop4: {
               NestedProp4: {
-                DeeplyNestedProp4: 4
-              }
-            }
-          }
-        ]
+                DeeplyNestedProp4: 4,
+              },
+            },
+          },
+        ],
       };
       const expected =
         '?$filter=Prop1/NestedProp1 eq 1 and ((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))';
@@ -394,29 +428,29 @@ describe('filter', () => {
     it('should handle nested logical operators and deeply nested properties on same property using objects (expanded)', () => {
       const filter = {
         Prop1: {
-          NestedProp1: 1
+          NestedProp1: 1,
         },
         or: [
           {
             Prop2: {
               and: {
                 NestedProp2: {
-                  DeeplyNestedProp2: 2
+                  DeeplyNestedProp2: 2,
                 },
                 NestedProp3: {
-                  ne: null
-                }
-              }
-            }
+                  ne: null,
+                },
+              },
+            },
           },
           {
             Prop4: {
               NestedProp4: {
-                DeeplyNestedProp4: 4
-              }
-            }
-          }
-        ]
+                DeeplyNestedProp4: 4,
+              },
+            },
+          },
+        ],
       };
       const expected =
         '?$filter=Prop1/NestedProp1 eq 1 and (((Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null)) or (Prop4/NestedProp4/DeeplyNestedProp4 eq 4))';
@@ -426,24 +460,24 @@ describe('filter', () => {
   });
 
   describe('collection operators', () => {
-    it('should ignore collection operator with an empty object of filters', () => {
+    it('should generate empty collection operator with an empty object of filters', () => {
       const filter = {
         Tasks: {
-          any: {}
-        }
+          any: {},
+        },
       };
-      const expected = '';
+      const expected = '?$filter=Tasks/any()';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-    it('should ignore collection operator with an empty array of filters', () => {
+    it('should generate empty collection operator with an empty array of filters', () => {
       const filter = {
         Tasks: {
-          any: []
-        }
+          any: [],
+        },
       };
-      const expected = '';
+      const expected = '?$filter=Tasks/any()';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -451,8 +485,8 @@ describe('filter', () => {
     it('should ignore collection operator with null filters', () => {
       const filter = {
         Tasks: {
-          any: null
-        }
+          any: null,
+        },
       };
       const expected = '';
       const actual = buildQuery({ filter });
@@ -464,9 +498,9 @@ describe('filter', () => {
         Tasks: {
           any: {
             AssignedGroupId: 1234,
-            StatusId: 300
-          }
-        }
+            StatusId: 300,
+          },
+        },
       };
       const expected =
         '?$filter=Tasks/any(tasks:tasks/AssignedGroupId eq 1234 and tasks/StatusId eq 300)';
@@ -477,11 +511,11 @@ describe('filter', () => {
     it('should handle collection operator with array of objects as implied `and`', () => {
       const filter = {
         Tasks: {
-          any: [{ AssignedGroupId: 1234 }, { StatusId: 300 }]
-        }
+          any: [{ AssignedGroupId: 1234 }, { StatusId: 300 }],
+        },
       };
       const expected =
-        '?$filter=Tasks/any(tasks:(tasks/AssignedGroupId eq 1234) and (tasks/StatusId eq 300))';
+        '?$filter=Tasks/any(tasks:tasks/AssignedGroupId eq 1234 and tasks/StatusId eq 300)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -491,13 +525,13 @@ describe('filter', () => {
         Tasks: {
           any: {
             SubTasks: {
-              any: [{ AssignedGroupId: 1234 }, { StatusId: 300 }]
-            }
-          }
-        }
+              any: [{ AssignedGroupId: 1234 }, { StatusId: 300 }],
+            },
+          },
+        },
       };
       const expected =
-        '?$filter=Tasks/any(tasks:tasks/SubTasks/any(subtasks:(subtasks/AssignedGroupId eq 1234) and (subtasks/StatusId eq 300)))';
+        '?$filter=Tasks/any(tasks:tasks/SubTasks/any(subtasks:subtasks/AssignedGroupId eq 1234 and subtasks/StatusId eq 300))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -509,17 +543,17 @@ describe('filter', () => {
             SubTasks: {
               any: {
                 AssignedGroupId: 1234,
-                StatusId: 300
-              }
+                StatusId: 300,
+              },
             },
             OtherTasks: {
               all: {
                 StatusId: 122,
-                AssignedGroupId: 2345
-              }
-            }
-          }
-        }
+                AssignedGroupId: 2345,
+              },
+            },
+          },
+        },
       };
       const expected =
         '?$filter=Tasks/any(tasks:tasks/SubTasks/any(subtasks:subtasks/AssignedGroupId eq 1234 and subtasks/StatusId eq 300) and tasks/OtherTasks/all(othertasks:othertasks/StatusId eq 122 and othertasks/AssignedGroupId eq 2345))';
@@ -531,9 +565,9 @@ describe('filter', () => {
       const filter = {
         Tasks: {
           any: {
-            or: [{ AssignedGroupId: 1234 }, { StatusId: 300 }]
-          }
-        }
+            or: [{ AssignedGroupId: 1234 }, { StatusId: 300 }],
+          },
+        },
       };
       const expected =
         '?$filter=Tasks/any(tasks:((tasks/AssignedGroupId eq 1234) or (tasks/StatusId eq 300)))';
@@ -547,15 +581,15 @@ describe('filter', () => {
           any: [
             {
               CreatedBy: {
-                Name: 'Sean Lynch'
+                Name: 'Sean Lynch',
               },
-              StatusId: 300
-            }
-          ]
-        }
+              StatusId: 300,
+            },
+          ],
+        },
       };
       const expected =
-        "?$filter=Tasks/any(tasks:(tasks/CreatedBy/Name eq 'Sean Lynch' and tasks/StatusId eq 300))";
+        "?$filter=Tasks/any(tasks:tasks/CreatedBy/Name eq 'Sean Lynch' and tasks/StatusId eq 300)";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -565,10 +599,10 @@ describe('filter', () => {
         Tasks: {
           any: {
             'toupper(searchProp)': {
-              contains: 'foo'
-            }
-          }
-        }
+              contains: 'foo',
+            },
+          },
+        },
       };
       const expected =
         "?$filter=Tasks/any(tasks:contains(toupper(tasks/searchProp),'foo'))";
@@ -577,21 +611,21 @@ describe('filter', () => {
     });
 
     it('should handle collection operator with a function indexof', () => {
-        const filter = {
-          Tasks: {
-            any: {
-              "indexof(toupper(searchProp),'foo')": {
-                eq: -1
-              }
-            }
-          }
-        };
-        const expected =
-          "?$filter=Tasks/any(tasks:indexof(toupper(tasks/searchProp),'foo') eq -1)";
-        const actual = buildQuery({ filter });
-        expect(actual).toEqual(expected);
+      const filter = {
+        Tasks: {
+          any: {
+            "indexof(toupper(searchProp),'foo')": {
+              eq: -1,
+            },
+          },
+        },
+      };
+      const expected =
+        "?$filter=Tasks/any(tasks:indexof(toupper(tasks/searchProp),'foo') eq -1)";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
     });
-});
+  });
 
   describe('data types', () => {
     it('should handle a number', () => {
@@ -632,8 +666,8 @@ describe('filter', () => {
     it('should handle GUID values', () => {
       const filter = {
         someProp: {
-          eq: { type: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' }
-        }
+          eq: { type: 'guid', value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd' },
+        },
       };
       const expected =
         '?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd';
@@ -645,8 +679,8 @@ describe('filter', () => {
       const filter = {
         someProp: {
           type: 'guid',
-          value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd'
-        }
+          value: 'cd5977c2-4a64-42de-b2fc-7fe4707c65cd',
+        },
       };
       const expected =
         '?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd';
@@ -661,10 +695,10 @@ describe('filter', () => {
             type: 'guid',
             value: [
               'cd5977c2-4a64-42de-b2fc-7fe4707c65cd',
-              'cd5977c2-4a64-42de-b2fc-7fe4707c65ce'
-            ]
-          }
-        }
+              'cd5977c2-4a64-42de-b2fc-7fe4707c65ce',
+            ],
+          },
+        },
       };
       const expected =
         '?$filter=(someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd or someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65ce)';
@@ -687,14 +721,18 @@ describe('filter', () => {
     });
 
     it('should handle binary values', () => {
-      const filter = { someProp: { eq: { type: 'binary', value: 'YmluYXJ5RGF0YQ==' } } };
+      const filter = {
+        someProp: { eq: { type: 'binary', value: 'YmluYXJ5RGF0YQ==' } },
+      };
       const expected = "?$filter=someProp eq binary'YmluYXJ5RGF0YQ=='";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
     it('should handle shorthand raw values', () => {
-      const filter = { someProp: { type: 'binary', value: 'YmluYXJ5RGF0YQ==' } };
+      const filter = {
+        someProp: { type: 'binary', value: 'YmluYXJ5RGF0YQ==' },
+      };
       const expected = "?$filter=someProp eq binary'YmluYXJ5RGF0YQ=='";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
@@ -747,9 +785,9 @@ describe('transform', () => {
       aggregate: {
         Amount: {
           with: 'sum',
-          as: 'Total'
-        }
-      }
+          as: 'Total',
+        },
+      },
     };
     const expected = '?$apply=aggregate(Amount with sum as Total)';
     const actual = buildQuery({ transform });
@@ -762,14 +800,14 @@ describe('transform', () => {
         aggregate: {
           Amount: {
             with: 'sum',
-            as: 'Total'
+            as: 'Total',
           },
           Id: {
             with: 'countdistinct',
-            as: 'Count'
-          }
-        }
-      }
+            as: 'Count',
+          },
+        },
+      },
     ];
     const expected =
       '?$apply=aggregate(Amount with sum as Total,Id with countdistinct as Count)';
@@ -784,20 +822,50 @@ describe('transform', () => {
           {
             Amount: {
               with: 'sum',
-              as: 'Total'
-            }
+              as: 'Total',
+            },
           },
           {
             Amount: {
               with: 'max',
-              as: 'Max'
-            }
-          }
-        ]
-      }
+              as: 'Max',
+            },
+          },
+        ],
+      },
     ];
     const expected =
       '?$apply=aggregate(Amount with sum as Total,Amount with max as Max)';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('custom aggregation as string', () => {
+    const transform = {
+      aggregate: "Forecast",
+    };
+    const expected = '?$apply=aggregate(Forecast)';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+
+  it('multiple aggregations with same property as array', () => {
+    const transform = [
+      {
+        aggregate: [
+          "Forecast",
+          {
+            Amount: {
+              with: 'max',
+              as: 'Max',
+            },
+          },
+        ],
+      },
+    ];
+    const expected =
+      '?$apply=aggregate(Forecast,Amount with max as Max)';
     const actual = buildQuery({ transform });
     expect(actual).toEqual(expected);
   });
@@ -806,9 +874,9 @@ describe('transform', () => {
     const transform = [
       {
         filter: {
-          PropName: 1
-        }
-      }
+          PropName: 1,
+        },
+      },
     ];
     const expected = '?$apply=filter(PropName eq 1)';
     const actual = buildQuery({ transform });
@@ -840,9 +908,9 @@ describe('transform', () => {
     const transform = [
       {
         groupBy: {
-          properties: ['SomeProp']
-        }
-      }
+          properties: ['SomeProp'],
+        },
+      },
     ];
     const expected = '?$apply=groupby((SomeProp))';
     const actual = buildQuery({ transform });
@@ -853,9 +921,9 @@ describe('transform', () => {
     const transform = [
       {
         groupBy: {
-          properties: ['SomeProp', 'AnotherProp']
-        }
-      }
+          properties: ['SomeProp', 'AnotherProp'],
+        },
+      },
     ];
     const expected = '?$apply=groupby((SomeProp,AnotherProp))';
     const actual = buildQuery({ transform });
@@ -872,13 +940,13 @@ describe('transform', () => {
               aggregate: {
                 Id: {
                   with: 'countdistinct',
-                  as: 'Total'
-                }
-              }
-            }
-          ]
-        }
-      }
+                  as: 'Total',
+                },
+              },
+            },
+          ],
+        },
+      },
     ];
     const expected =
       '?$apply=groupby((SomeProp),aggregate(Id with countdistinct as Total))';
@@ -889,7 +957,7 @@ describe('transform', () => {
   it('group by with filter before as object', () => {
     const transform = {
       filter: {
-        PropName: 1
+        PropName: 1,
       },
       groupBy: {
         properties: ['SomeProp'],
@@ -897,11 +965,11 @@ describe('transform', () => {
           aggregate: {
             Id: {
               with: 'countdistinct',
-              as: 'Total'
-            }
-          }
-        }
-      }
+              as: 'Total',
+            },
+          },
+        },
+      },
     };
     const expected =
       '?$apply=filter(PropName eq 1)/groupby((SomeProp),aggregate(Id with countdistinct as Total))';
@@ -913,8 +981,8 @@ describe('transform', () => {
     const transform = [
       {
         filter: {
-          PropName: 1
-        }
+          PropName: 1,
+        },
       },
       {
         groupBy: {
@@ -924,18 +992,18 @@ describe('transform', () => {
               aggregate: {
                 Id: {
                   with: 'countdistinct',
-                  as: 'Total'
-                }
-              }
-            }
-          ]
-        }
+                  as: 'Total',
+                },
+              },
+            },
+          ],
+        },
       },
       {
         filter: {
-          Total: { ge: 5 }
-        }
-      }
+          Total: { ge: 5 },
+        },
+      },
     ];
     const expected =
       '?$apply=filter(PropName eq 1)/groupby((SomeProp),aggregate(Id with countdistinct as Total))/filter(Total ge 5)';
@@ -981,9 +1049,9 @@ describe('orderBy', () => {
     const query = {
       expand: {
         Memberships: {
-          orderBy: 'Group/Name'
-        }
-      }
+          orderBy: 'Group/Name',
+        },
+      },
     };
     const expected = '?$expand=Memberships($orderby=Group/Name)';
     const actual = buildQuery(query);
@@ -994,9 +1062,9 @@ describe('orderBy', () => {
     const query = {
       expand: {
         Memberships: {
-          orderBy: ['Group/Name', 'Group/Description']
-        }
-      }
+          orderBy: ['Group/Name', 'Group/Description'],
+        },
+      },
     };
     const expected =
       '?$expand=Memberships($orderby=Group/Name,Group/Description)';
@@ -1071,7 +1139,7 @@ describe('count', () => {
     const transform = [
       {
         filter: {
-          PropName: 1
+          PropName: 1,
         },
         groupBy: {
           properties: ['SomeProp'],
@@ -1080,13 +1148,13 @@ describe('count', () => {
               aggregate: {
                 Id: {
                   with: 'countdistinct',
-                  as: 'Total'
-                }
-              }
-            }
-          ]
-        }
-      }
+                  as: 'Total',
+                },
+              },
+            },
+          ],
+        },
+      },
     ];
     const expected =
       '/$count?$apply=filter(PropName eq 1)/groupby((SomeProp),aggregate(Id with countdistinct as Total))';
@@ -1165,9 +1233,9 @@ describe('expand', () => {
   });
 
   it('should allow multiple nested expands with objects', () => {
-    const expand = [
+    const expand: Expand = [
       { Friends: { expand: 'Photos' } },
-      { One: { expand: 'Two' } }
+      { One: { expand: 'Two' } },
     ];
     const expected = '?$expand=Friends($expand=Photos),One($expand=Two)';
     const actual = buildQuery({ expand });
@@ -1296,7 +1364,7 @@ describe('function', () => {
 
   it('should support a function on a collection with an array/collection parameter of a complex type', () => {
     const func = {
-      Test: { SomeCollection: [{ Name: 'Sean' }, { Name: 'Jason' }] }
+      Test: { SomeCollection: [{ Name: 'Sean' }, { Name: 'Jason' }] },
     };
     const expected =
       '/Test(SomeCollection=@SomeCollection)?@SomeCollection=%5B%7B%22Name%22%3A%22Sean%22%7D%2C%7B%22Name%22%3A%22Jason%22%7D%5D';
@@ -1311,5 +1379,5 @@ describe('format', () => {
     const expected = '?$format=json';
     const actual = buildQuery({ format });
     expect(actual).toEqual(expected);
-  })
-})
+  });
+});
