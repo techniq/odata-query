@@ -2,11 +2,9 @@
   "include": ["src", "types"],
   "compilerOptions": {
     "target": "es5",
-    "module": "esnext",
     "lib": ["dom", "esnext"],
     "importHelpers": true,
-    "declaration": true,
-    "sourceMap": true,
+    "declaration": false,
     "rootDir": "./src",
     "strict": true,
     "noImplicitAny": true,
@@ -27,6 +25,5 @@
     "jsx": "react",
     "esModuleInterop": true,
     "typeRoots": ["./node_modules/@types/"],
-    "outDir": "dist/"
   }
 }
