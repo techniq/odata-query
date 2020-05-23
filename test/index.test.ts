@@ -1211,6 +1211,13 @@ describe('pagination', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('should support skipping by token', () => {
+    const skiptoken = 'Id: 1';
+    const expected = '?$skiptoken=Id: 1';
+    const actual = buildQuery({ skiptoken });
+    expect(actual).toEqual(expected);
+  });
+
   it('should support paginating (skip and limiting)', () => {
     const page = 3;
     const perPage = 25;

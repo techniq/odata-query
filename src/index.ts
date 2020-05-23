@@ -51,6 +51,7 @@ export type QueryOptions<T> = ExpandOptions<T> & {
   search: string;
   transform: PlainObject | PlainObject[];
   skip: number;
+  skiptoken: string;
   key: string | number | PlainObject;
   count: boolean | Filter;
   action: string;
@@ -63,6 +64,7 @@ export default function <T>({
   search: $search,
   top: $top,
   skip: $skip,
+  skiptoken: $skiptoken,
   format: $format,
   filter,
   transform,
@@ -134,7 +136,7 @@ export default function <T>({
     }
   }
 
-  return buildUrl(path, { $select, $search, $top, $skip, $format, ...params });
+  return buildUrl(path, { $select, $search, $top, $skip, $skiptoken, $format, ...params });
 }
 
 function buildFilter(filters: Filter = {}, propPrefix = ''): string {
