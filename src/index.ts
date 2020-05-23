@@ -14,9 +14,11 @@ const FUNCTION_REGEX = /\((.*)\)/;
 const INDEXOF_REGEX = /(?!indexof)\((\w+)\)/;
 
 export type PlainObject = { [property: string]: any };
+export type Select<T> = string | keyof T | Array<keyof T>;
+export type OrderBy<T> = string | OrderByOptions<T> | Array<OrderByOptions<T>> | { [P in keyof T]?: OrderBy<T[P]> };
 export type Filter = string | PlainObject | Array<string | PlainObject>;
-export type NestedExpandOptions = { [key: string]: Partial<ExpandQueryOptions>; };
-export type Expand = string | NestedExpandOptions | Array<string | NestedExpandOptions>;
+export type NestedExpandOptions<T> = {[P in keyof T]?: (T[P] extends Array<infer E> ? Partial<ExpandOptions<E>> : Partial<ExpandOptions<T[P]>>) };
+export type Expand<T> = string | keyof T | NestedExpandOptions<T> | Array<keyof T | NestedExpandOptions<T>> | Array<string | NestedExpandOptions<T>>;
 export enum StandardAggregateMethods {
   sum = "sum",
   min = "min",
@@ -24,40 +26,71 @@ export enum StandardAggregateMethods {
   average = "average",
   countdistinct = "countdistinct",
 }
-export type Aggregate = { [propertyName: string]: { with: StandardAggregateMethods, as: string } } | string;
+export type Aggregate = string | { [propertyName: string]: { with: StandardAggregateMethods, as: string } };
 
-export interface ExpandQueryOptions {
-  select: string | string[];
+export type OrderByOptions<T> = keyof T | [ keyof T, 'asc' | 'desc' ];
+export type ExpandOptions<T> = {
+  select: Select<T>;
   filter: Filter;
-  orderBy: string | string[];
+  orderBy: OrderBy<T>;
   top: number;
-  expand: Expand;
+  expand: Expand<T>;
 }
-export interface Transform {
-  aggregate?: Aggregate | Aggregate[];
+
+export type Transform<T> = {
+  aggregate?: Aggregate | Array<Aggregate>;
   filter?: Filter;
-  groupBy?: GroupBy;
+  groupBy?: GroupBy<T>;
 }
-export interface GroupBy {
-  properties: string[];
-  transform?: Transform;
+export type GroupBy<T> = {
+  properties: Array<keyof T>;
+  transform?: Transform<T>;
 }
-export interface QueryOptions extends ExpandQueryOptions {
+
+export type Value = {
+  type: 'raw' | 'guid' | 'binary' | 'json' | 'alias';
+  value: any;
+}
+
+export type Alias = Value & {
+  name: string;
+  handleName(): string;
+  handleValue(): string;
+}
+
+export const raw = (value: string): Value => ({type: 'raw', value});
+export const guid = (value: string): Value => ({type: 'guid', value});
+export const binary = (value: string): Value => ({type: 'binary', value});
+export const json = (value: PlainObject): Value => ({type: 'json', value});
+export const alias = (name: string, value: PlainObject): Alias => ({
+  type: 'alias', name, value,
+  handleName() {
+    return `@${this.name}`;
+  },
+  handleValue() {
+    return handleValue(this.value);
+  }
+});
+
+export type QueryOptions<T> = ExpandOptions<T> & {
   search: string;
   transform: PlainObject | PlainObject[];
   skip: number;
+  skiptoken: string;
   key: string | number | PlainObject;
   count: boolean | Filter;
   action: string;
   func: string | { [functionName: string]: { [parameterName: string]: any } };
   format: string;
+  aliases: Alias[]; 
 }
 
-export default function ({
+export default function <T>({
   select: $select,
   search: $search,
   top: $top,
   skip: $skip,
+  skiptoken: $skiptoken,
   format: $format,
   filter,
   transform,
@@ -67,7 +100,8 @@ export default function ({
   expand,
   action,
   func,
-}: Partial<QueryOptions> = {}) {
+  aliases
+}: Partial<QueryOptions<T>> = {}) {
   let path = '';
 
   const params: any = {
@@ -106,34 +140,27 @@ export default function ({
     } else if (typeof func === 'object') {
       const [funcName] = Object.keys(func);
       const funcArgs = Object.keys(func[funcName]).reduce(
-        (acc: { params: string[]; aliases: string[] }, item) => {
-          const value = func[funcName][item];
-          if (Array.isArray(value) && typeof value[0] === 'object') {
-            acc.params.push(`${item}=@${item}`);
-            acc.aliases.push(`@${item}=${escape(JSON.stringify(value))}`);
-          } else {
-            acc.params.push(`${item}=${handleValue(value)}`);
-          }
-          return acc;
-        },
-        { params: [], aliases: [] }
+        (acc: string[], item) => [...acc, `${item}=${handleValue(func[funcName][item])}`],
+        []
       );
 
       path += `/${funcName}`;
-      if (funcArgs.params.length) {
-        path += `(${funcArgs.params.join(',')})`;
-      }
-      if (funcArgs.aliases.length) {
-        path += `?${funcArgs.aliases.join(',')}`;
+      if (funcArgs.length) {
+        path += `(${funcArgs.join(',')})`;
       }
     }
   }
 
-  return buildUrl(path, { $select, $search, $top, $skip, $format, ...params });
+  if (aliases) {
+    aliases
+      .reduce((acc, alias) => Object.assign(acc, {[alias.handleName()]: alias.handleValue()}), params);
+  }
+
+  return buildUrl(path, { $select, $search, $top, $skip, $skiptoken, $format, ...params });
 }
 
 function buildFilter(filters: Filter = {}, propPrefix = ''): string {
-  return (Array.isArray(filters) ? filters : [filters])
+  return ((Array.isArray(filters) ? filters : [filters])
     .reduce((acc: string[], filter) => {
       if (filter) {
         const builtFilter = buildFilterCore(filter, propPrefix);
@@ -142,8 +169,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
         }
       }
       return acc;
-    }, [])
-    .join(' and ');
+    }, []) as string[]).join(' and ');
 
   function buildFilterCore(filter: Filter = {}, propPrefix = '') {
     let filterExpr = "";
@@ -319,14 +345,18 @@ function handleValue(value: any) {
         return value.value;
       case 'binary':
         return `binary'${value.value}'`;
+      case 'alias':
+        return (value as Alias).handleName();
+      case 'json':
+        return escape(JSON.stringify(value.value));
     }
     return value;
   }
 }
 
-function buildExpand(expands: Expand): string {
+function buildExpand<T>(expands: Expand<T>): string {
   if (typeof expands === 'number') {
-    return expands;
+    return expands as any;
   } else if (typeof expands === 'string') {
     if (expands.indexOf('/') === -1) {
       return expands;
@@ -349,7 +379,7 @@ function buildExpand(expands: Expand): string {
         }
       }, '');
   } else if (Array.isArray(expands)) {
-    return `${expands.map(e => buildExpand(e)).join(',')}`;
+    return `${(expands as Array<NestedExpandOptions<any>>).map(e => buildExpand(e)).join(',')}`;
   } else if (typeof expands === 'object') {
     const expandKeys = Object.keys(expands);
 
@@ -362,17 +392,17 @@ function buildExpand(expands: Expand): string {
         .map(key => {
           const value =
             key === 'filter'
-              ? buildFilter(expands[key])
+              ? buildFilter((expands as NestedExpandOptions<any>)[key])
               : key.toLowerCase() === 'orderby'
-                ? buildOrderBy(expands[key] as string | string[])
-                : buildExpand(expands[key] as Expand);
+                ? buildOrderBy((expands as NestedExpandOptions<any>)[key] as OrderBy<T>)
+                : buildExpand((expands as NestedExpandOptions<any>)[key] as Expand<T>);
           return `$${key.toLowerCase()}=${value}`;
         })
         .join(';');
     } else {
       return expandKeys
         .map(key => {
-          const builtExpand = buildExpand(expands[key] as any);
+          const builtExpand = buildExpand((expands as NestedExpandOptions<any>)[key] as NestedExpandOptions<any>);
           return builtExpand ? `${key}(${builtExpand})` : key;
         })
         .join(',');
@@ -381,7 +411,7 @@ function buildExpand(expands: Expand): string {
   return "";
 }
 
-function buildTransforms(transforms: Transform | Transform[]) {
+function buildTransforms<T>(transforms: Transform<T> | Transform<T>[]) {
   // Wrap single object an array for simplified processing
   const transformsArray = Array.isArray(transforms) ? transforms : [transforms];
 
@@ -435,7 +465,7 @@ function buildAggregate(aggregate: Aggregate | Aggregate[]) {
     .join(',');
 }
 
-function buildGroupBy(groupBy: GroupBy) {
+function buildGroupBy<T>(groupBy: GroupBy<T>) {
   if (!groupBy.properties) {
     throw new Error(`'properties' property required for groupBy`);
   }
@@ -449,8 +479,19 @@ function buildGroupBy(groupBy: GroupBy) {
   return result;
 }
 
-function buildOrderBy(orderBy: string | string[]): string {
-  return Array.isArray(orderBy) ? orderBy.map(o => buildOrderBy(o)).join(',') : orderBy;
+function buildOrderBy<T>(orderBy: OrderBy<T>, prefix: string = ''): string {
+  if (Array.isArray(orderBy)) {
+    return (orderBy as OrderByOptions<T>[])
+      .map(value => 
+        (Array.isArray(value) && value.length === 2 && ['asc', 'desc'].indexOf(value[1]) !== -1)? value.join(' ') : value
+      )
+      .map(v => `${prefix}${v}`).join(',');
+  } else if (typeof orderBy === 'object') {
+    return Object.entries(orderBy)
+      .map(([k, v]) => buildOrderBy(v as OrderBy<any>, `${k}/`))
+      .map(v => `${prefix}${v}`).join(',');
+  }
+  return `${prefix}${orderBy}`;
 }
 
 function buildUrl(path: string, params: PlainObject): string {

@@ -1,4 +1,4 @@
-import buildQuery, { Expand } from '../src/index';
+import buildQuery, { Expand, OrderBy, alias, json } from '../src/index';
 
 it('should return an empty string by default', () => {
   expect(buildQuery()).toEqual('');
@@ -275,6 +275,21 @@ describe('filter', () => {
       const expected =
         '?$filter=DateProp ge 2017-01-01T00:00:00.000Z and DateProp le 2017-03-01T00:00:00.000Z';
       const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle implied logical operator on a single property using alises', () => {
+      const start = alias("start", new Date(Date.UTC(2017, 0, 1)));
+      const end = alias("end", new Date(Date.UTC(2017, 2, 1)));
+      const filter = { DateProp: { ge: start, le: end } };
+      let expected =
+        '?$filter=DateProp ge @start and DateProp le @end&@start=2017-01-01T00:00:00.000Z&@end=2017-03-01T00:00:00.000Z';
+      let actual = buildQuery({ filter, aliases: [start, end] });
+      expect(actual).toEqual(expected);
+      end.value = new Date(Date.UTC(2017, 5, 1));
+      expected =
+        '?$filter=DateProp ge @start and DateProp le @end&@start=2017-01-01T00:00:00.000Z&@end=2017-06-01T00:00:00.000Z';
+      actual = buildQuery({ filter, aliases: [start, end] });
       expect(actual).toEqual(expected);
     });
 
@@ -1045,6 +1060,38 @@ describe('orderBy', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('should support passing an array of fields', () => {
+    type Bar = {foo: any, bar: any};
+    const orderBy = ['foo', 'bar'] as OrderBy<Bar>;
+    const expected = '?$orderby=foo,bar';
+    const actual = buildQuery({ orderBy });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support passing an array of [fields, order]', () => {
+    type Bar = {foo: any, bar: any};
+    const orderBy = [['foo', 'asc'], ['bar', 'desc']] as OrderBy<Bar>;
+    const expected = '?$orderby=foo asc,bar desc';
+    const actual = buildQuery({ orderBy });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support passing an object', () => {
+    type Bar = {foo: {bar: any}};
+    const orderBy = {foo: ['bar']} as OrderBy<Bar>;
+    const expected = '?$orderby=foo/bar';
+    const actual = buildQuery({ orderBy });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support passing an object of [fields, order]', () => {
+    type Bar = {foo: {bar: any}};
+    const orderBy = {foo: [['bar', 'asc']]} as OrderBy<Bar>;
+    const expected = '?$orderby=foo/bar asc';
+    const actual = buildQuery({ orderBy });
+    expect(actual).toEqual(expected);
+  });
+
   it('should support ordering a nested property within an expand', () => {
     const query = {
       expand: {
@@ -1104,10 +1151,11 @@ describe('key', () => {
   });
 
   it('should support key with expand', () => {
+    type Bar = { Foo: any };
     const key = 1;
-    const expand = ['Foo'];
+    const expand = ['Foo'] as Expand<Bar>;
     const expected = '(1)?$expand=Foo';
-    const actual = buildQuery({ key, expand });
+    const actual = buildQuery<Bar>({ key, expand });
     expect(actual).toEqual(expected);
   });
 });
@@ -1178,6 +1226,13 @@ describe('pagination', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('should support skipping by token', () => {
+    const skiptoken = 'Id: 1';
+    const expected = '?$skiptoken=Id: 1';
+    const actual = buildQuery({ skiptoken });
+    expect(actual).toEqual(expected);
+  });
+
   it('should support paginating (skip and limiting)', () => {
     const page = 3;
     const perPage = 25;
@@ -1198,9 +1253,10 @@ describe('expand', () => {
   });
 
   it('should support multiple expands as an array', () => {
-    const expand = ['Foo', 'Bar'];
+    type Bar = { Foo: any, Bar: any };
+    const expand = ['Foo', 'Bar'] as Expand<Bar>;
     const expected = '?$expand=Foo,Bar';
-    const actual = buildQuery({ expand });
+    const actual = buildQuery<Bar>({ expand });
     expect(actual).toEqual(expected);
   });
 
@@ -1233,7 +1289,8 @@ describe('expand', () => {
   });
 
   it('should allow multiple nested expands with objects', () => {
-    const expand: Expand = [
+    type Bar = { Friends: { Photos: any}, One: { Two: any }};
+    const expand: Expand<Bar> = [
       { Friends: { expand: 'Photos' } },
       { One: { expand: 'Two' } },
     ];
@@ -1243,7 +1300,8 @@ describe('expand', () => {
   });
 
   it('should allow multiple expands mixing objects and strings', () => {
-    const expand = [{ Friends: { expand: 'Photos' } }, 'Foo/Bar/Baz'];
+    type Bar = { Friends: { Photos: any}, One: { Two: any }};
+    const expand: Expand<Bar> = [{ Friends: { expand: 'Photos' } }, 'Foo/Bar/Baz'];
     const expected =
       '?$expand=Friends($expand=Photos),Foo($expand=Bar($expand=Baz))';
     const actual = buildQuery({ expand });
@@ -1362,13 +1420,25 @@ describe('function', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('should support a function on a collection with an array/collection parameter of a complex type', () => {
+  it('should support a function on a collection with an array/collection parameter of a strings', () => {
+    const someCollection = alias("SomeCollection", ['Sean', 'Jason']);
     const func = {
-      Test: { SomeCollection: [{ Name: 'Sean' }, { Name: 'Jason' }] },
+      Test: { SomeCollection: someCollection },
+    };
+    const expected =
+      "/Test(SomeCollection=@SomeCollection)?@SomeCollection=['Sean','Jason']";
+    const actual = buildQuery({ func, aliases: [someCollection] });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support a function on a collection with an array/collection parameter of a complex type', () => {
+    const someCollection = alias("SomeCollection", json([{ Name: 'Sean' }, { Name: 'Jason' }]));
+    const func = {
+      Test: { SomeCollection: someCollection },
     };
     const expected =
       '/Test(SomeCollection=@SomeCollection)?@SomeCollection=%5B%7B%22Name%22%3A%22Sean%22%7D%2C%7B%22Name%22%3A%22Jason%22%7D%5D';
-    const actual = buildQuery({ func });
+    const actual = buildQuery({ func, aliases: [someCollection] });
     expect(actual).toEqual(expected);
   });
 });
