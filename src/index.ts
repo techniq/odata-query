@@ -14,9 +14,10 @@ const FUNCTION_REGEX = /\((.*)\)/;
 const INDEXOF_REGEX = /(?!indexof)\((\w+)\)/;
 
 export type PlainObject = { [property: string]: any };
+export type Select<T> = string | keyof T | Array<keyof T>;
+export type OrderBy<T> = string | OrderByOptions<T> | Array<OrderByOptions<T>> | { [P in keyof T]?: OrderBy<T[P]> };
 export type Filter = string | PlainObject | Array<string | PlainObject>;
-export type NestedExpandOptions = { [key: string]: Partial<ExpandQueryOptions>; };
-export type Expand = string | NestedExpandOptions | Array<string | NestedExpandOptions>;
+export type Expand<T> = string | Array<keyof T> | {[P in keyof T]?: (T[P] extends Array<infer E> ? Partial<ExpandOptions<E>> : Partial<ExpandOptions<T[P]>>) };
 export enum StandardAggregateMethods {
   sum = "sum",
   min = "min",
@@ -24,25 +25,28 @@ export enum StandardAggregateMethods {
   average = "average",
   countdistinct = "countdistinct",
 }
-export type Aggregate = { [propertyName: string]: { with: StandardAggregateMethods, as: string } } | string;
+export type Aggregate = string | { [propertyName: string]: { with: StandardAggregateMethods, as: string } };
 
-export interface ExpandQueryOptions {
-  select: string | string[];
+export type OrderByOptions<T> = keyof T | [ keyof T, 'asc' | 'desc' ];
+export type ExpandOptions<T> = {
+  select: Select<T>;
   filter: Filter;
-  orderBy: string | string[];
+  orderBy: OrderBy<T>;
   top: number;
-  expand: Expand;
+  expand: Expand<T>;
 }
-export interface Transform {
-  aggregate?: Aggregate | Aggregate[];
+
+export type Transform<T> = {
+  aggregate?: Aggregate | Array<Aggregate>;
   filter?: Filter;
-  groupBy?: GroupBy;
+  groupBy?: GroupBy<T>;
 }
-export interface GroupBy {
-  properties: string[];
-  transform?: Transform;
+export type GroupBy<T> = {
+  properties: Array<keyof T>;
+  transform?: Transform<T>;
 }
-export interface QueryOptions extends ExpandQueryOptions {
+
+export type QueryOptions<T> = ExpandOptions<T> & {
   search: string;
   transform: PlainObject | PlainObject[];
   skip: number;
@@ -53,7 +57,7 @@ export interface QueryOptions extends ExpandQueryOptions {
   format: string;
 }
 
-export default function ({
+export default function <T>({
   select: $select,
   search: $search,
   top: $top,
@@ -67,7 +71,7 @@ export default function ({
   expand,
   action,
   func,
-}: Partial<QueryOptions> = {}) {
+}: Partial<QueryOptions<T>> = {}) {
   let path = '';
 
   const params: any = {
@@ -133,7 +137,7 @@ export default function ({
 }
 
 function buildFilter(filters: Filter = {}, propPrefix = ''): string {
-  return (Array.isArray(filters) ? filters : [filters])
+  return ((Array.isArray(filters) ? filters : [filters])
     .reduce((acc: string[], filter) => {
       if (filter) {
         const builtFilter = buildFilterCore(filter, propPrefix);
@@ -142,8 +146,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
         }
       }
       return acc;
-    }, [])
-    .join(' and ');
+    }, []) as string[]).join(' and ');
 
   function buildFilterCore(filter: Filter = {}, propPrefix = '') {
     let filterExpr = "";
@@ -324,7 +327,7 @@ function handleValue(value: any) {
   }
 }
 
-function buildExpand(expands: Expand): string {
+function buildExpand<T>(expands: Expand<T>): string {
   if (typeof expands === 'number') {
     return expands;
   } else if (typeof expands === 'string') {
@@ -364,8 +367,8 @@ function buildExpand(expands: Expand): string {
             key === 'filter'
               ? buildFilter(expands[key])
               : key.toLowerCase() === 'orderby'
-                ? buildOrderBy(expands[key] as string | string[])
-                : buildExpand(expands[key] as Expand);
+                ? buildOrderBy(expands[key] as OrderBy<T>)
+                : buildExpand(expands[key] as Expand<T>);
           return `$${key.toLowerCase()}=${value}`;
         })
         .join(';');
@@ -381,7 +384,7 @@ function buildExpand(expands: Expand): string {
   return "";
 }
 
-function buildTransforms(transforms: Transform | Transform[]) {
+function buildTransforms<T>(transforms: Transform<T> | Transform<T>[]) {
   // Wrap single object an array for simplified processing
   const transformsArray = Array.isArray(transforms) ? transforms : [transforms];
 
@@ -435,7 +438,7 @@ function buildAggregate(aggregate: Aggregate | Aggregate[]) {
     .join(',');
 }
 
-function buildGroupBy(groupBy: GroupBy) {
+function buildGroupBy<T>(groupBy: GroupBy<T>) {
   if (!groupBy.properties) {
     throw new Error(`'properties' property required for groupBy`);
   }
@@ -449,8 +452,19 @@ function buildGroupBy(groupBy: GroupBy) {
   return result;
 }
 
-function buildOrderBy(orderBy: string | string[]): string {
-  return Array.isArray(orderBy) ? orderBy.map(o => buildOrderBy(o)).join(',') : orderBy;
+function buildOrderBy<T>(orderBy: OrderBy<T>, prefix: string = ''): string {
+  if (Array.isArray(orderBy)) {
+    return (orderBy as OrderByOptions<T>[])
+      .map(value => 
+        (Array.isArray(value) && value.length === 2 && ['asc', 'desc'].indexOf(value[1]) !== -1)? value.join(' ') : value
+      )
+      .map(v => `${prefix}${v}`).join(',');
+  } else if (typeof orderBy === 'object') {
+    return Object.entries(orderBy)
+      .map(([k, v]) => buildOrderBy(v, `${k}/`))
+      .map(v => `${prefix}${v}`).join(',');
+  }
+  return `${prefix}${orderBy}`;
 }
 
 function buildUrl(path: string, params: PlainObject): string {
