@@ -1,4 +1,4 @@
-import buildQuery, { Expand } from '../src/index';
+import buildQuery, { Expand, OrderBy } from '../src/index';
 
 it('should return an empty string by default', () => {
   expect(buildQuery()).toEqual('');
@@ -1045,6 +1045,38 @@ describe('orderBy', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('should support passing an array of fields', () => {
+    type Bar = {foo: any, bar: any};
+    const orderBy = ['foo', 'bar'] as OrderBy<Bar>;
+    const expected = '?$orderby=foo,bar';
+    const actual = buildQuery({ orderBy });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support passing an array of [fields, order]', () => {
+    type Bar = {foo: any, bar: any};
+    const orderBy = [['foo', 'asc'], ['bar', 'desc']] as OrderBy<Bar>;
+    const expected = '?$orderby=foo asc,bar desc';
+    const actual = buildQuery({ orderBy });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support passing an object', () => {
+    type Bar = {foo: {bar: any}};
+    const orderBy = {foo: ['bar']} as OrderBy<Bar>;
+    const expected = '?$orderby=foo/bar';
+    const actual = buildQuery({ orderBy });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support passing an object of [fields, order]', () => {
+    type Bar = {foo: {bar: any}};
+    const orderBy = {foo: [['bar', 'asc']]} as OrderBy<Bar>;
+    const expected = '?$orderby=foo/bar asc';
+    const actual = buildQuery({ orderBy });
+    expect(actual).toEqual(expected);
+  });
+
   it('should support ordering a nested property within an expand', () => {
     const query = {
       expand: {
@@ -1104,10 +1136,11 @@ describe('key', () => {
   });
 
   it('should support key with expand', () => {
+    type Bar = { Foo: any };
     const key = 1;
-    const expand = ['Foo'];
+    const expand = ['Foo'] as Expand<Bar>;
     const expected = '(1)?$expand=Foo';
-    const actual = buildQuery({ key, expand });
+    const actual = buildQuery<Bar>({ key, expand });
     expect(actual).toEqual(expected);
   });
 });
@@ -1198,9 +1231,10 @@ describe('expand', () => {
   });
 
   it('should support multiple expands as an array', () => {
-    const expand = ['Foo', 'Bar'];
+    type Bar = { Foo: any, Bar: any };
+    const expand = ['Foo', 'Bar'] as Expand<Bar>;
     const expected = '?$expand=Foo,Bar';
-    const actual = buildQuery({ expand });
+    const actual = buildQuery<Bar>({ expand });
     expect(actual).toEqual(expected);
   });
 
@@ -1233,7 +1267,8 @@ describe('expand', () => {
   });
 
   it('should allow multiple nested expands with objects', () => {
-    const expand: Expand = [
+    type Bar = { Friends: { Photos: any}, One: { Two: any }};
+    const expand: Expand<Bar> = [
       { Friends: { expand: 'Photos' } },
       { One: { expand: 'Two' } },
     ];
@@ -1243,7 +1278,8 @@ describe('expand', () => {
   });
 
   it('should allow multiple expands mixing objects and strings', () => {
-    const expand = [{ Friends: { expand: 'Photos' } }, 'Foo/Bar/Baz'];
+    type Bar = { Friends: { Photos: any}, One: { Two: any }};
+    const expand: Expand<Bar> = [{ Friends: { expand: 'Photos' } }, 'Foo/Bar/Baz'];
     const expected =
       '?$expand=Friends($expand=Photos),Foo($expand=Bar($expand=Baz))';
     const actual = buildQuery({ expand });

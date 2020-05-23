@@ -17,7 +17,8 @@ export type PlainObject = { [property: string]: any };
 export type Select<T> = string | keyof T | Array<keyof T>;
 export type OrderBy<T> = string | OrderByOptions<T> | Array<OrderByOptions<T>> | { [P in keyof T]?: OrderBy<T[P]> };
 export type Filter = string | PlainObject | Array<string | PlainObject>;
-export type Expand<T> = string | Array<keyof T> | {[P in keyof T]?: (T[P] extends Array<infer E> ? Partial<ExpandOptions<E>> : Partial<ExpandOptions<T[P]>>) };
+export type NestedExpandOptions<T> = {[P in keyof T]?: (T[P] extends Array<infer E> ? Partial<ExpandOptions<E>> : Partial<ExpandOptions<T[P]>>) };
+export type Expand<T> = string | keyof T | NestedExpandOptions<T> | Array<keyof T | NestedExpandOptions<T>> | Array<string | NestedExpandOptions<T>>;
 export enum StandardAggregateMethods {
   sum = "sum",
   min = "min",
@@ -329,7 +330,7 @@ function handleValue(value: any) {
 
 function buildExpand<T>(expands: Expand<T>): string {
   if (typeof expands === 'number') {
-    return expands;
+    return expands as any;
   } else if (typeof expands === 'string') {
     if (expands.indexOf('/') === -1) {
       return expands;
@@ -352,7 +353,7 @@ function buildExpand<T>(expands: Expand<T>): string {
         }
       }, '');
   } else if (Array.isArray(expands)) {
-    return `${expands.map(e => buildExpand(e)).join(',')}`;
+    return `${(expands as Array<NestedExpandOptions<any>>).map(e => buildExpand(e)).join(',')}`;
   } else if (typeof expands === 'object') {
     const expandKeys = Object.keys(expands);
 
@@ -365,17 +366,17 @@ function buildExpand<T>(expands: Expand<T>): string {
         .map(key => {
           const value =
             key === 'filter'
-              ? buildFilter(expands[key])
+              ? buildFilter((expands as NestedExpandOptions<any>)[key])
               : key.toLowerCase() === 'orderby'
-                ? buildOrderBy(expands[key] as OrderBy<T>)
-                : buildExpand(expands[key] as Expand<T>);
+                ? buildOrderBy((expands as NestedExpandOptions<any>)[key] as OrderBy<T>)
+                : buildExpand((expands as NestedExpandOptions<any>)[key] as Expand<T>);
           return `$${key.toLowerCase()}=${value}`;
         })
         .join(';');
     } else {
       return expandKeys
         .map(key => {
-          const builtExpand = buildExpand(expands[key] as any);
+          const builtExpand = buildExpand((expands as NestedExpandOptions<any>)[key] as NestedExpandOptions<any>);
           return builtExpand ? `${key}(${builtExpand})` : key;
         })
         .join(',');
@@ -461,7 +462,7 @@ function buildOrderBy<T>(orderBy: OrderBy<T>, prefix: string = ''): string {
       .map(v => `${prefix}${v}`).join(',');
   } else if (typeof orderBy === 'object') {
     return Object.entries(orderBy)
-      .map(([k, v]) => buildOrderBy(v, `${k}/`))
+      .map(([k, v]) => buildOrderBy(v as OrderBy<any>, `${k}/`))
       .map(v => `${prefix}${v}`).join(',');
   }
   return `${prefix}${orderBy}`;
