@@ -1,5 +1,6 @@
 {
   "include": ["src", "types"],
+  "exclude": ["src/index-browser.ts"],
   "compilerOptions": {
     "target": "es5",
     "lib": ["dom", "esnext"],
