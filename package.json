@@ -15,9 +15,12 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.15",
+    "browserify": "^16.5.1",
     "jest": "^24.8.0",
+    "mkdirp": "^1.0.4",
     "rimraf": "^2.6.3",
     "ts-jest": "^24.0.2",
+    "tsify": "^4.0.2",
     "typescript": "^3.5.2"
   },
   "scripts": {
