@@ -15,14 +15,16 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.15",
+    "browserify": "^16.5.1",
     "jest": "^24.8.0",
     "rimraf": "^2.6.3",
     "ts-jest": "^24.0.2",
+    "tsify": "^4.0.2",
     "typescript": "^3.5.2"
   },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "tsc -p tsconfig.cjs.json & tsc -p tsconfig.esm.json & tsc -p tsconfig.dts.json",
+    "build": "tsc -p tsconfig.cjs.json & tsc -p tsconfig.esm.json & tsc -p tsconfig.dts.json & browserify -e src/index-browser.ts -p [ tsify ] -o dist/browser/index.js",
     "test": "jest",
     "test-watch": "jest --watchAll",
     "preversion": "npm run build"
