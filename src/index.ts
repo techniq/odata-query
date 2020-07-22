@@ -499,10 +499,5 @@ function buildUrl(path: string, params: PlainObject): string {
 }
 
 function parseNot(builtFilters: string[]): string {
-  if (builtFilters.length > 1) {
-    return `not( ${builtFilters.join(' and ')})`;
-  } else {
-    const filter = builtFilters[0] as string;
-    return filter.charAt(0) === '(' ? `(not ${filter.substr(1)}` : `not ${filter}`;
-  }
+  return `not(${builtFilters.join(' and ')})`;
 }
