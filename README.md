@@ -79,6 +79,14 @@ buildQuery({ filter })
 ```
 Supported operators: `eq`, `ne`, `gt`, `ge`, `lt`, `le`, `in`
 
+Using the `in` operator is also similar to the previous example.
+
+```js
+const filter = { PropName: { in: [1, 2, 3] } };
+buildQuery({ filter })
+=> '?$filter=PropName in (1,2,3)'
+```
+
 #### Logical operators
 ##### Implied `and` with an array of objects
 ```js

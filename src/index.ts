@@ -254,21 +254,14 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
                   if (collectionClause) { result.push(collectionClause); }
                 } else if (op === 'in') {
                   const resultingValues = Array.isArray(value[op])
-                    ? // Convert `{ Prop: { in: [1,2,3] } }` to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
-                    value[op]
-                    : // Convert `{ Prop: { in: [{type: type, value: 1},{type: type, value: 2},{type: type, value: 3}] } }`
-                    // to `(Prop eq 1 or Prop eq 2 or Prop eq 3)`
-                    value[op].value.map((typedValue: any) => ({
+                    ? value[op]
+                    : value[op].value.map((typedValue: any) => ({
                       type: value[op].type,
                       value: typedValue,
                     }));
 
                   result.push(
-                    '(' +
-                    resultingValues
-                      .map((v: any) => `${propName} eq ${handleValue(v)}`)
-                      .join(' or ') +
-                    ')'
+                    propName + ' in (' + resultingValues.map((v: any) => handleValue(v)).join(',') + ')'
                   );
                 } else if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
                   // Simple boolean functions (startswith, endswith, contains)
@@ -506,10 +499,5 @@ function buildUrl(path: string, params: PlainObject): string {
 }
 
 function parseNot(builtFilters: string[]): string {
-  if (builtFilters.length > 1) {
-    return `not( ${builtFilters.join(' and ')})`;
-  } else {
-    const filter = builtFilters[0] as string;
-    return filter.charAt(0) === '(' ? `(not ${filter.substr(1)}` : `not ${filter}`;
-  }
+  return `not(${builtFilters.join(' and ')})`;
 }

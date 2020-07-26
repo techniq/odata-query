@@ -39,15 +39,15 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should convert "in" operator to "or" statement', () => {
+    it('should allow "in" operator', () => {
       const filter = { SomeProp: { in: [1, 2, 3] } };
       const expected =
-        '?$filter=(SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3)';
+        '?$filter=SomeProp in (1,2,3)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-    it('should convert "in" operator to "or" statement and wrap in parens', () => {
+    it('should allow "in" operator in combination with other conditions', () => {
       const filter = {
         SomeNames: {
           contains: 'Bob',
@@ -55,15 +55,23 @@ describe('filter', () => {
         },
       };
       const expected =
-        "?$filter=contains(SomeNames,'Bob') and (SomeNames eq 'Peter Newman' or SomeNames eq 'Bob Ross' or SomeNames eq 'Bobby Parker' or SomeNames eq 'Mike Bobson')";
+        "?$filter=contains(SomeNames,'Bob') and SomeNames in ('Peter Newman','Bob Ross','Bobby Parker','Mike Bobson')";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
-    it('converting "in" operator to "or" statement also works when using in an array', () => {
+    it('allows "in" operator when using in an array', () => {
       const filter = [{ SomeProp: { in: [1, 2, 3] }, AnotherProp: 4 }];
       const expected =
-        '?$filter=(SomeProp eq 1 or SomeProp eq 2 or SomeProp eq 3) and AnotherProp eq 4';
+        '?$filter=SomeProp in (1,2,3) and AnotherProp eq 4';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('allows "in" operator in negated case', () => {
+      const filter = { not: { SomeProp: { in: [1, 2, 3] } } };
+      const expected =
+        '?$filter=not(SomeProp in (1,2,3))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -128,7 +136,7 @@ describe('filter', () => {
         ],
       };
       const expected =
-        "?$filter=((not startswith(FooProp,'foo')) and (not startswith(BarProp,'bar')) and (startswith(FooBarProp,'foobar')))";
+        "?$filter=((not(startswith(FooProp,'foo'))) and (not(startswith(BarProp,'bar'))) and (startswith(FooBarProp,'foobar')))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -146,7 +154,7 @@ describe('filter', () => {
         ],
       };
       const expected =
-        "?$filter=((not( startswith(FooProp,'foo') and startswith(BarProp,'bar'))) and (startswith(FooBarProp,'bar')))";
+        "?$filter=((not(startswith(FooProp,'foo') and startswith(BarProp,'bar'))) and (startswith(FooBarProp,'bar')))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -156,10 +164,11 @@ describe('filter', () => {
         not: [
           { FooProp: { startswith: 'foo' } },
           { BarProp: { startswith: 'bar' } },
+          { FizProp: { in: [1, 2, 3]     } },
         ],
       };
       const expected =
-        "?$filter=not( (startswith(FooProp,'foo')) and (startswith(BarProp,'bar')))";
+        "?$filter=not((startswith(FooProp,'foo')) and (startswith(BarProp,'bar')) and (FizProp in (1,2,3)))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -171,12 +180,13 @@ describe('filter', () => {
             not: [
               { FooProp: { startswith: 'foo' } },
               { BarProp: { startswith: 'bar' } },
+              { FizProp: { in: [1, 2, 3]     } },
             ],
           },
         ],
       };
       const expected =
-        "?$filter=((not( (startswith(FooProp,'foo')) and (startswith(BarProp,'bar')))))";
+        "?$filter=((not((startswith(FooProp,'foo')) and (startswith(BarProp,'bar')) and (FizProp in (1,2,3)))))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -716,7 +726,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        '?$filter=(someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd or someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65ce)';
+        '?$filter=someProp in (cd5977c2-4a64-42de-b2fc-7fe4707c65cd,cd5977c2-4a64-42de-b2fc-7fe4707c65ce)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
