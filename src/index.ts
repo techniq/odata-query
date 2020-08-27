@@ -48,7 +48,7 @@ export type GroupBy<T> = {
 }
 
 export type Value = {
-  type: 'raw' | 'guid' | 'binary' | 'json' | 'alias';
+  type: 'raw' | 'guid' | 'duration' | 'binary' | 'json' | 'alias';
   value: any;
 }
 
@@ -60,6 +60,7 @@ export type Alias = Value & {
 
 export const raw = (value: string): Value => ({type: 'raw', value});
 export const guid = (value: string): Value => ({type: 'guid', value});
+export const duration = (value: string): Value => ({type: 'duration', value});
 export const binary = (value: string): Value => ({type: 'binary', value});
 export const json = (value: PlainObject): Value => ({type: 'json', value});
 export const alias = (name: string, value: PlainObject): Alias => ({
@@ -334,6 +335,8 @@ function handleValue(value: any) {
     switch (value && value.type) {
       case 'guid':
         return value.value;
+      case 'duration':
+        return `duration'${value.value}'`;
       case 'raw':
         return value.value;
       case 'binary':
