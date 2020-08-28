@@ -729,6 +729,49 @@ describe('filter', () => {
         '?$filter=someProp in (cd5977c2-4a64-42de-b2fc-7fe4707c65cd,cd5977c2-4a64-42de-b2fc-7fe4707c65ce)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
+    });    
+    
+    it('should handle Duration values', () => {
+      const filter = {
+        someProp: {
+          eq: { type: 'duration', value: 'PT1H' },
+        },
+      };
+      const expected =
+        '?$filter=someProp eq duration\'PT1H\'';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle Duration values with explicit eq ', () => {
+      const filter = {
+        someProp: {
+          type: 'duration',
+          value: 'PT1H',
+        },
+      };
+      const expected =
+        '?$filter=someProp eq duration\'PT1H\'';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle Duration values with an in operator', () => {
+      const filter = {
+        someProp: {
+          in: {
+            type: 'duration',
+            value: [
+              'PT1H',
+              'PT2H',
+            ],
+          },
+        },
+      };
+      const expected =
+        '?$filter=someProp in (duration\'PT1H\',duration\'PT2H\')';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
     });
 
     it('should handle raw values', () => {

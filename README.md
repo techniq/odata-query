@@ -275,6 +275,13 @@ buildQuery({ filter })
 => "?$filter=someProp eq cd5977c2-4a64-42de-b2fc-7fe4707c65cd"
 ```
 
+Duration:
+```js
+const filter = { "someProp": { eq: { type: 'duration', value: 'PT1H' } } };
+buildQuery({ filter })
+=> "?$filter=someProp eq duration'PT1H'"
+```
+
 Binary:
 ```js
 const filter = { "someProp": { eq: { type: 'binary', value: 'YmluYXJ5RGF0YQ==' } } };
