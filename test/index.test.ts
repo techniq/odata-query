@@ -1317,7 +1317,6 @@ describe('pagination', () => {
     const actual = buildQuery({ top, skip });
     expect(actual).toEqual(expected);
   });
-
 });
 
 describe('expand', () => {
