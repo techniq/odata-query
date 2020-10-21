@@ -494,8 +494,9 @@ function buildUrl(path: string, params: PlainObject): string {
   // This can be refactored using URL API. But IE does not support it.
   const queries: string[] = [];
   for (const key of Object.getOwnPropertyNames(params)) {
-    if (params[key]) {
-      queries.push(`${key}=${params[key]}`);
+    const value = params[key]; 
+    if (value === 0 || !!value) {
+      queries.push(`${key}=${value}`);
     }
   }
   return queries.length ? `${path}?${queries.join('&')}` : path;
