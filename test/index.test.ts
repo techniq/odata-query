@@ -1295,6 +1295,28 @@ describe('pagination', () => {
     const actual = buildQuery({ top, skip });
     expect(actual).toEqual(expected);
   });
+
+  it('should support skipping zero items', () => {
+    const skip = 0;
+    const expected = '?$skip=0';
+    const actual = buildQuery({ skip });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support limiting to zero items', () => {
+    const top = 0;
+    const expected = '?$top=0';
+    const actual = buildQuery({ top });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support limiting and skipping zero items', () => {
+    const top = 0;
+    const skip = 0;
+    const expected = '?$top=0&$skip=0';
+    const actual = buildQuery({ top, skip });
+    expect(actual).toEqual(expected);
+  });
 });
 
 describe('expand', () => {
