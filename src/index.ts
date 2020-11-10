@@ -294,18 +294,30 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
     return filterExpr;
   }
 
-  function buildCollectionClause(lambdaParameter: string, value: any, op: string, propName: string) {
-    let clause = "";
-    if (value) {
-      // normalize {any:[{prop1: 1}, {prop2: 1}]} --> {any:{prop1: 1, prop2: 1}}; same for 'all'
-      const filter = buildFilterCore(
-        Array.isArray(value)
-          ? value.reduce((acc, item) => ({ ...acc, ...item }), {})
-          : value, lambdaParameter);
-      clause = `${propName}/${op}(${filter ? `${lambdaParameter}:${filter}` : ""})`;
-    }
-    return clause;
-  }
+	function buildCollectionClause(lambdaParameter: string, value: any, op: string, propName: string) {
+		let clause = '';
+
+		if (typeof value === 'string' || value instanceof String) {
+			clause = getStringCollectionClause(lambdaParameter, value, op, propName);
+
+		} else if (value) {
+			// normalize {any:[{prop1: 1}, {prop2: 1}]} --> {any:{prop1: 1, prop2: 1}}; same for 'all'
+			const filter = buildFilterCore(
+				Array.isArray(value)
+					? value.reduce((acc, item) => ({ ...acc, ...item }), {})
+					: value, lambdaParameter);
+			clause = `${propName}/${op}(${filter ? `${lambdaParameter}:${filter}` : ''})`;
+		}
+		return clause;
+	}
+}
+
+function getStringCollectionClause(lambdaParameter: string, value: any, collectionOperator: string, propName: string) {
+	let clause = '';
+	const conditionOperator = collectionOperator == 'all' ? 'ne' : 'eq';
+	clause = `${propName}/${collectionOperator}(${lambdaParameter}: ${lambdaParameter} ${conditionOperator} '${value}')`
+
+	return clause;
 }
 
 function escapeIllegalChars(string: string) {
