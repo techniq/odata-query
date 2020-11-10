@@ -650,6 +650,28 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
+
+    it('should handle collection operator over simple string collection with any', () => {
+      const filter = {
+        MacAddress: {
+          any: "3C:4A:92:F1:98:E2"
+        }
+      };      
+      const expected = "?$filter=MacAddress/any(macaddress: macaddress eq '3C:4A:92:F1:98:E2')";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    })
+
+    it('should handle collection operator over simple string collection with all', () => {
+      const filter = {
+        MacAddress: {
+          all: "3C:4A:92:F1:98:E2"
+        }
+      };      
+      const expected = "?$filter=MacAddress/all(macaddress: macaddress ne '3C:4A:92:F1:98:E2')";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    })
   });
 
   describe('data types', () => {
