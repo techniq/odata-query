@@ -673,7 +673,7 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     })
 
-    it('should support "in" operator on a collection with an array/collection parameter of a strings', () => {
+    it('should handle collection operator with "in" operator on the item of a simple collection', () => {
       const filter = {
         tags: {
           any: {
@@ -682,6 +682,24 @@ describe('filter', () => {
         },
       };
       const expected = "?$filter=tags/any(tags:tags in ('tag1','tag2'))";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    })
+
+
+    it('should handle collection operator with "or" operator on the item of a simple collection', () => {
+      const filter = {
+        tags: {
+          any: {
+            or: [
+              { [ITEM_ROOT]: 'tag1'},
+              { [ITEM_ROOT]: 'tag2'},
+            ]
+          }
+        }
+      };
+
+      const expected = "?$filter=tags/any(tags:((tags eq 'tag1') or (tags eq 'tag2')))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     })
