@@ -1,4 +1,4 @@
-import buildQuery, { Expand, OrderBy, alias, json } from '../src/index';
+import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT} from '../src/index';
 
 it('should return an empty string by default', () => {
   expect(buildQuery()).toEqual('');
@@ -669,6 +669,19 @@ describe('filter', () => {
         }
       };      
       const expected = "?$filter=MacAddress/all(macaddress: macaddress ne '3C:4A:92:F1:98:E2')";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    })
+
+    it('should support "in" operator on a collection with an array/collection parameter of a strings', () => {
+      const filter = {
+        tags: {
+          any: {
+            [ITEM_ROOT]: { in: ['tag1', 'tag2']},
+          },
+        },
+      };
+      const expected = "?$filter=tags/any(tags:tags in ('tag1','tag2'))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     })

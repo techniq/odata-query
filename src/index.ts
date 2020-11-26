@@ -83,8 +83,10 @@ export type QueryOptions<T> = ExpandOptions<T> & {
   action: string;
   func: string | { [functionName: string]: { [parameterName: string]: any } };
   format: string;
-  aliases: Alias[]; 
+  aliases: Alias[];
 }
+
+export const ITEM_ROOT = '__item';
 
 export default function <T>({
   select: $select,
@@ -183,7 +185,9 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
           const value = (filter as any)[filterKey];
           let propName = '';
           if (propPrefix) {
-            if (INDEXOF_REGEX.test(filterKey)) {
+            if (filterKey === ITEM_ROOT) {
+              propName = propPrefix;
+            } else if (INDEXOF_REGEX.test(filterKey)) {
               propName = filterKey.replace(INDEXOF_REGEX, `(${propPrefix}/$1)`);
             } else if (FUNCTION_REGEX.test(filterKey)) {
               propName = filterKey.replace(FUNCTION_REGEX, `(${propPrefix}/$1)`);
@@ -490,7 +494,7 @@ function buildGroupBy<T>(groupBy: GroupBy<T>) {
 function buildOrderBy<T>(orderBy: OrderBy<T>, prefix: string = ''): string {
   if (Array.isArray(orderBy)) {
     return (orderBy as OrderByOptions<T>[])
-      .map(value => 
+      .map(value =>
         (Array.isArray(value) && value.length === 2 && ['asc', 'desc'].indexOf(value[1]) !== -1)? value.join(' ') : value
       )
       .map(v => `${prefix}${v}`).join(',');
@@ -506,7 +510,7 @@ function buildUrl(path: string, params: PlainObject): string {
   // This can be refactored using URL API. But IE does not support it.
   const queries: string[] = [];
   for (const key of Object.getOwnPropertyNames(params)) {
-    const value = params[key]; 
+    const value = params[key];
     if (value === 0 || !!value) {
       queries.push(`${key}=${value}`);
     }
