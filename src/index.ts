@@ -86,7 +86,7 @@ export type QueryOptions<T> = ExpandOptions<T> & {
   aliases: Alias[];
 }
 
-export const ITEM_ROOT = '__item';
+export const ITEM_ROOT = "";
 
 export default function <T>({
   select: $select,
@@ -188,9 +188,9 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
             if (filterKey === ITEM_ROOT) {
               propName = propPrefix;
             } else if (INDEXOF_REGEX.test(filterKey)) {
-              propName = filterKey.replace(INDEXOF_REGEX, `(${propPrefix}/$1)`);
+              propName = filterKey.replace(INDEXOF_REGEX, (_,$1)=>$1.trim() === ITEM_ROOT ? `(${propPrefix})` : `(${propPrefix}/${$1.trim()})`);
             } else if (FUNCTION_REGEX.test(filterKey)) {
-              propName = filterKey.replace(FUNCTION_REGEX, `(${propPrefix}/$1)`);
+              propName = filterKey.replace(FUNCTION_REGEX, (_,$1)=>$1.trim() === ITEM_ROOT ? `(${propPrefix})` : `(${propPrefix}/${$1.trim()})`);
             } else {
               propName = `${propPrefix}/${filterKey}`;
             }

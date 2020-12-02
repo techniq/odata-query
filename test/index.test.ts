@@ -703,6 +703,20 @@ describe('filter', () => {
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     })
+
+    it('should handle collection operator with a function on the item of a simple collection', () => {
+      const filter = {
+        tags: {
+          any: {
+            [`tolower(${ITEM_ROOT})`]: 'tag1'
+          }
+        }
+      }
+      const expected =
+          "?$filter=tags/any(tags:tolower(tags) eq 'tag1')";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
   });
 
   describe('data types', () => {
