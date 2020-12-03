@@ -185,7 +185,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
           const value = (filter as any)[filterKey];
           let propName = '';
           if (propPrefix) {
-            if (filterKey === ITEM_ROOT) {
+            if (filterKey === ITEM_ROOT || Array.isArray(filter)) {
               propName = propPrefix;
             } else if (INDEXOF_REGEX.test(filterKey)) {
               propName = filterKey.replace(INDEXOF_REGEX, (_,$1)=>$1.trim() === ITEM_ROOT ? `(${propPrefix})` : `(${propPrefix}/${$1.trim()})`);
@@ -196,6 +196,12 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
             }
           } else {
             propName = filterKey;
+          }
+
+          if (filterKey === ITEM_ROOT && Array.isArray(value)) {
+            return result.concat(
+                value.map((arrayValue: any) => `${propName} eq ${handleValue(arrayValue)}`)
+            )
           }
 
           if (
@@ -305,11 +311,20 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
 			clause = getStringCollectionClause(lambdaParameter, value, op, propName);
 
 		} else if (value) {
+          const filterValue = Array.isArray(value)
+              ? value.reduce((acc, item) => {
+                if (item.hasOwnProperty(ITEM_ROOT)) {
+                  if (!acc.hasOwnProperty(ITEM_ROOT)) {
+                    acc[ITEM_ROOT] = [];
+                  }
+                  acc[ITEM_ROOT].push(item[ITEM_ROOT])
+                  return acc;
+                }
+                return {...acc, ...item}
+              }, {}) : value
+
 			// normalize {any:[{prop1: 1}, {prop2: 1}]} --> {any:{prop1: 1, prop2: 1}}; same for 'all'
-			const filter = buildFilterCore(
-				Array.isArray(value)
-					? value.reduce((acc, item) => ({ ...acc, ...item }), {})
-					: value, lambdaParameter);
+			const filter = buildFilterCore(filterValue, lambdaParameter);
 			clause = `${propName}/${op}(${filter ? `${lambdaParameter}:${filter}` : ''})`;
 		}
 		return clause;
