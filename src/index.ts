@@ -4,6 +4,7 @@ const COLLECTION_OPERATORS = ['any', 'all'];
 const BOOLEAN_FUNCTIONS = ['startswith', 'endswith', 'contains'];
 const SUPPORTED_EXPAND_PROPERTIES = [
   'expand',
+  'levels',
   'select',
   'top',
   'count',
@@ -35,6 +36,7 @@ export type ExpandOptions<T> = {
   filter: Filter;
   orderBy: OrderBy<T>;
   top: number;
+  levels: number | 'max';
   count: boolean | Filter;
   expand: Expand<T>;
 }
@@ -412,11 +414,12 @@ function buildExpand<T>(expands: Expand<T>): string {
             case 'orderBy':
               value = buildOrderBy((expands as NestedExpandOptions<any>)[key] as OrderBy<T>);
               break;
+            case 'levels':
             case 'count':
             case 'top':
               value = `${(expands as NestedExpandOptions<any>)[key]}`;
               break;
-            default: 
+            default:
               value = buildExpand((expands as NestedExpandOptions<any>)[key] as Expand<T>);
           }
           return `$${key.toLowerCase()}=${value}`;
