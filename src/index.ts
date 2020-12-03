@@ -95,10 +95,10 @@ export const ITEM_ROOT = "";
 export default function <T>({
   select: $select,
   search: $search,
-  top: $top,
-  skip: $skip,
   skiptoken: $skiptoken,
   format: $format,
+  top,
+  skip,
   filter,
   transform,
   orderBy,
@@ -111,12 +111,7 @@ export default function <T>({
 }: Partial<QueryOptions<T>> = {}) {
   let path = '';
 
-  const params: any = {
-    $filter: (filter || count instanceof Object) && buildFilter(count instanceof Object ? count : filter),
-    $apply: transform && buildTransforms(transform),
-    $expand: expand && buildExpand(expand),
-    $orderby: orderBy && buildOrderBy(orderBy),
-  };
+  const params: any = {};
 
   if (key) {
     if (typeof key === 'object') {
@@ -129,12 +124,32 @@ export default function <T>({
     }
   }
 
+  if (filter || typeof count === 'object')
+    params.$filter = buildFilter(typeof count === 'object' ? count : filter);
+
+  if (transform)
+    params.$apply = buildTransforms(transform);
+
+  if (expand)
+    params.$expand = buildExpand(expand);
+
+  if (orderBy)
+    params.$orderby = buildOrderBy(orderBy);
+
   if (count) {
     if (typeof count === 'boolean') {
       params.$count = true;
     } else {
       path += '/$count';
     }
+  }
+
+  if (typeof top === 'number') {
+    params.$top = top;
+  }
+
+  if (typeof skip === 'number') {
+    params.$skip = skip;
   }
 
   if (action) {
@@ -163,7 +178,7 @@ export default function <T>({
       .reduce((acc, alias) => Object.assign(acc, {[alias.handleName()]: alias.handleValue()}), params);
   }
 
-  return buildUrl(path, { $select, $search, $top, $skip, $skiptoken, $format, ...params });
+  return buildUrl(path, { $select, $search, $skiptoken, $format, ...params });
 }
 
 function buildFilter(filters: Filter = {}, propPrefix = ''): string {
@@ -522,13 +537,9 @@ function buildOrderBy<T>(orderBy: OrderBy<T>, prefix: string = ''): string {
 
 function buildUrl(path: string, params: PlainObject): string {
   // This can be refactored using URL API. But IE does not support it.
-  const queries: string[] = [];
-  for (const key of Object.getOwnPropertyNames(params)) {
-    const value = params[key];
-    if (value === 0 || !!value) {
-      queries.push(`${key}=${value}`);
-    }
-  }
+  const queries: string[] = Object.getOwnPropertyNames(params)
+    .filter(key => params[key] !== undefined && params[key] !== '')
+    .map(key => `${key}=${params[key]}`);
   return queries.length ? `${path}?${queries.join('&')}` : path;
 }
 
