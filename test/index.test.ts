@@ -1464,6 +1464,13 @@ describe('expand', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('should allow expand with count', () => {
+    const expand = { Friends: { count: true } };
+    const expected = '?$expand=Friends($count=true)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
   it('should allow expand with select and top', () => {
     const expand = { Friends: { select: 'Name', top: 10 } };
     const expected = '?$expand=Friends($select=Name;$top=10)';

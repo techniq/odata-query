@@ -6,6 +6,7 @@ const SUPPORTED_EXPAND_PROPERTIES = [
   'expand',
   'select',
   'top',
+  'count',
   'orderby',
   'filter',
 ];
@@ -34,6 +35,7 @@ export type ExpandOptions<T> = {
   filter: Filter;
   orderBy: OrderBy<T>;
   top: number;
+  count: boolean | Filter;
   expand: Expand<T>;
 }
 
@@ -402,12 +404,21 @@ function buildExpand<T>(expands: Expand<T>): string {
     ) {
       return expandKeys
         .map(key => {
-          const value =
-            key === 'filter'
-              ? buildFilter((expands as NestedExpandOptions<any>)[key])
-              : key.toLowerCase() === 'orderby'
-                ? buildOrderBy((expands as NestedExpandOptions<any>)[key] as OrderBy<T>)
-                : buildExpand((expands as NestedExpandOptions<any>)[key] as Expand<T>);
+          let value;
+          switch (key) {
+            case 'filter':
+              value = buildFilter((expands as NestedExpandOptions<any>)[key]);
+              break;
+            case 'orderBy':
+              value = buildOrderBy((expands as NestedExpandOptions<any>)[key] as OrderBy<T>);
+              break;
+            case 'count':
+            case 'top':
+              value = `${(expands as NestedExpandOptions<any>)[key]}`;
+              break;
+            default: 
+              value = buildExpand((expands as NestedExpandOptions<any>)[key] as Expand<T>);
+          }
           return `$${key.toLowerCase()}=${value}`;
         })
         .join(';');
