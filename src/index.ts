@@ -37,7 +37,7 @@ export type ExpandOptions<T> = {
   orderBy: OrderBy<T>;
   top: number;
   levels: number | 'max';
-  count: boolean;
+  count: boolean | Filter;
   expand: Expand<T>;
 }
 
