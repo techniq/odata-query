@@ -33,6 +33,7 @@ See [tests](src/index.test.js) for examples as well
   - [Collection operators](#collection-operators) - `any`, `all`
     - [Implied and with an object or array of objects](#implied-and)
     - [Explicit operator (`and`, `or`, and `not`)](#explicit-operator-and-or)
+    - [Implied all operators on collection item itself](#implied-all-operators-on-collection-item-itself)
   - [Functions](#functions)
     - [String functions returning boolean](#string-functions-returning-boolean)
     - [Functions returning non-boolean values (string, int)](#functions-returning-non-boolean-values-string-int)
@@ -225,6 +226,68 @@ const filter = {
 
 buildQuery({ filter })
 => '?$filter=not ItemsProp/any(i:((i/SomeProp eq 1) or (i/AnotherProp eq 2)))'
+```
+
+##### Implied all operators on collection item itself 
+ITEM_ROOT is special constant to mark collection with primitive type
+
+'in' operator
+```js
+const filter = {
+    tags: {
+      any: {
+        [ITEM_ROOT]: { in: ['tag1', 'tag2']},
+      },
+    },
+};
+
+buildQuery({ filter })
+=> "?$filter=tags/any(tags:tags in ('tag1','tag2'))"
+```
+'or' operator on collection item itself
+```js
+const filter = {
+    tags: {
+      any: {
+        or: [
+          { [ITEM_ROOT]: 'tag1'},
+          { [ITEM_ROOT]: 'tag2'},
+        ]
+      }
+    }
+};
+
+buildQuery({ filter })
+=> "?$filter=tags/any(tags:((tags eq 'tag1') or (tags eq 'tag2')))";
+```
+
+'and' operator on collection item itself 
+```js
+ const filter = {
+    tags: {
+      any: [
+          { [ITEM_ROOT]: 'tag1'},
+          { [ITEM_ROOT]: 'tag2'},
+          { prop: 'tag3'},
+        ]
+    }
+};
+
+buildQuery({ filter });
+=> "?$filter=tags/any(tags:tags eq 'tag1' and tags eq 'tag2' and tags/prop eq 'tag3')";
+```
+Function on collection item itself 
+```js
+const filter = {
+    tags: {
+      any: {
+        [`tolower(${ITEM_ROOT})`]: 'tag1'
+      }
+    }
+};
+
+buildQuery({ filter });
+=> "?$filter=tags/any(tags:tolower(tags) eq 'tag1')";
 ```
 
 Supported operators: `any`, `all`
