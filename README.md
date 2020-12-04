@@ -261,7 +261,7 @@ buildQuery({ filter })
 => "?$filter=tags/any(tags:((tags eq 'tag1') or (tags eq 'tag2')))";
 ```
 
-'and' operator on collection item itself 
+'and' operator on collection item itself and nested item
 ```js
  const filter = {
     tags: {
