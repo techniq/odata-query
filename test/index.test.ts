@@ -1480,6 +1480,29 @@ describe('expand', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('should allow expand with count', () => {
+    const expand = { Friends: { count: true } };
+    const expected = '?$expand=Friends($count=true)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow expand with levels', () => {
+    type Bar = { Friends: { Photos: any}, One: { Two: any }};
+    const expand: Expand<Bar> = { Friends: { expand: { Photos: { levels: 10 }}} };
+    const expected = '?$expand=Friends($expand=Photos($levels=10))';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should allow expand with max levels', () => {
+    type Bar = { Friends: { Photos: any}, One: { Two: any }};
+    const expand: Expand<Bar> = { Friends: { expand: { Photos: { levels: 'max' }}} };
+    const expected = '?$expand=Friends($expand=Photos($levels=max))';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
   it('should allow expand with select and top', () => {
     const expand = { Friends: { select: 'Name', top: 10 } };
     const expected = '?$expand=Friends($select=Name;$top=10)';
