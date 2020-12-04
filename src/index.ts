@@ -162,6 +162,10 @@ export default function <T>({
   return buildUrl(path, { $select, $search, $top, $skip, $skiptoken, $format, ...params });
 }
 
+function renderPrimitiveValue(key: string, val: any) {
+  return `${key} eq ${handleValue(val)}`
+}
+
 function buildFilter(filters: Filter = {}, propPrefix = ''): string {
   return ((Array.isArray(filters) ? filters : [filters])
     .reduce((acc: string[], filter) => {
@@ -200,7 +204,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
 
           if (filterKey === ITEM_ROOT && Array.isArray(value)) {
             return result.concat(
-                value.map((arrayValue: any) => `${propName} eq ${handleValue(arrayValue)}`)
+                value.map((arrayValue: any) => renderPrimitiveValue(propName, arrayValue))
             )
           }
 
@@ -210,7 +214,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
             value === null
           ) {
             // Simple key/value handled as equals operator
-            result.push(`${propName} eq ${handleValue(value)}`);
+            result.push(renderPrimitiveValue(propName, value));
           } else if (Array.isArray(value)) {
             const op = filterKey;
             const builtFilters = value
@@ -244,7 +248,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
             }
           } else if (value instanceof Object) {
             if ('type' in value) {
-              result.push(`${propName} eq ${handleValue(value)}`);
+              result.push(renderPrimitiveValue(propName, value));
             } else {
               const operators = Object.keys(value);
               operators.forEach(op => {
