@@ -327,17 +327,15 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
     return filterExpr;
   }
 
-	function buildCollectionClause(lambdaParameter: string, value: any, op: string, propName: string) {
-		let clause = '';
+  function buildCollectionClause(lambdaParameter: string, value: any, op: string, propName: string) {
+    let clause = '';
 
-		if (typeof value === 'string' || value instanceof String) {
-			clause = getStringCollectionClause(lambdaParameter, value, op, propName);
-		} else if (value) {
-
-		  // normalize {any:[{prop1: 1}, {prop2: 1}]} --> {any:{prop1: 1, prop2: 1}}; same for 'all',
-          // simple values collection: {any:[{'': 'simpleVal1'}, {'': 'simpleVal2'}]} --> {any:{'': ['simpleVal1', 'simpleVal2']}}; same for 'all',
-
-        const filterValue = Array.isArray(value) ?
+    if (typeof value === 'string' || value instanceof String) {
+      clause = getStringCollectionClause(lambdaParameter, value, op, propName);
+    } else if (value) {
+      // normalize {any:[{prop1: 1}, {prop2: 1}]} --> {any:{prop1: 1, prop2: 1}}; same for 'all',
+      // simple values collection: {any:[{'': 'simpleVal1'}, {'': 'simpleVal2'}]} --> {any:{'': ['simpleVal1', 'simpleVal2']}}; same for 'all',
+      const filterValue = Array.isArray(value) ?
           value.reduce((acc, item) => {
             if (item.hasOwnProperty(ITEM_ROOT)) {
               if (!acc.hasOwnProperty(ITEM_ROOT)) {
@@ -349,11 +347,11 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
             return {...acc, ...item}
           }, {}) : value;
 
-          const filter = buildFilterCore(filterValue, lambdaParameter);
-          clause = `${propName}/${op}(${filter ? `${lambdaParameter}:${filter}` : ''})`;
-		}
-		return clause;
-	}
+      const filter = buildFilterCore(filterValue, lambdaParameter);
+      clause = `${propName}/${op}(${filter ? `${lambdaParameter}:${filter}` : ''})`;
+    }
+    return clause;
+  }
 }
 
 function getStringCollectionClause(lambdaParameter: string, value: any, collectionOperator: string, propName: string) {
