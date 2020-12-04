@@ -181,6 +181,10 @@ export default function <T>({
   return buildUrl(path, { $select, $search, $skiptoken, $format, ...params });
 }
 
+function renderPrimitiveValue(key: string, val: any) {
+  return `${key} eq ${handleValue(val)}`
+}
+
 function buildFilter(filters: Filter = {}, propPrefix = ''): string {
   return ((Array.isArray(filters) ? filters : [filters])
     .reduce((acc: string[], filter) => {
@@ -217,13 +221,19 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
             propName = filterKey;
           }
 
+          if (filterKey === ITEM_ROOT && Array.isArray(value)) {
+            return result.concat(
+                value.map((arrayValue: any) => renderPrimitiveValue(propName, arrayValue))
+            )
+          }
+
           if (
             ['number', 'string', 'boolean'].indexOf(typeof value) !== -1 ||
             value instanceof Date ||
             value === null
           ) {
             // Simple key/value handled as equals operator
-            result.push(`${propName} eq ${handleValue(value)}`);
+            result.push(renderPrimitiveValue(propName, value));
           } else if (Array.isArray(value)) {
             const op = filterKey;
             const builtFilters = value
@@ -257,7 +267,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
             }
           } else if (value instanceof Object) {
             if ('type' in value) {
-              result.push(`${propName} eq ${handleValue(value)}`);
+              result.push(renderPrimitiveValue(propName, value));
             } else {
               const operators = Object.keys(value);
               operators.forEach(op => {
@@ -317,22 +327,31 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
     return filterExpr;
   }
 
-	function buildCollectionClause(lambdaParameter: string, value: any, op: string, propName: string) {
-		let clause = '';
+  function buildCollectionClause(lambdaParameter: string, value: any, op: string, propName: string) {
+    let clause = '';
 
-		if (typeof value === 'string' || value instanceof String) {
-			clause = getStringCollectionClause(lambdaParameter, value, op, propName);
+    if (typeof value === 'string' || value instanceof String) {
+      clause = getStringCollectionClause(lambdaParameter, value, op, propName);
+    } else if (value) {
+      // normalize {any:[{prop1: 1}, {prop2: 1}]} --> {any:{prop1: 1, prop2: 1}}; same for 'all',
+      // simple values collection: {any:[{'': 'simpleVal1'}, {'': 'simpleVal2'}]} --> {any:{'': ['simpleVal1', 'simpleVal2']}}; same for 'all',
+      const filterValue = Array.isArray(value) ?
+          value.reduce((acc, item) => {
+            if (item.hasOwnProperty(ITEM_ROOT)) {
+              if (!acc.hasOwnProperty(ITEM_ROOT)) {
+                acc[ITEM_ROOT] = [];
+              }
+              acc[ITEM_ROOT].push(item[ITEM_ROOT])
+              return acc;
+            }
+            return {...acc, ...item}
+          }, {}) : value;
 
-		} else if (value) {
-			// normalize {any:[{prop1: 1}, {prop2: 1}]} --> {any:{prop1: 1, prop2: 1}}; same for 'all'
-			const filter = buildFilterCore(
-				Array.isArray(value)
-					? value.reduce((acc, item) => ({ ...acc, ...item }), {})
-					: value, lambdaParameter);
-			clause = `${propName}/${op}(${filter ? `${lambdaParameter}:${filter}` : ''})`;
-		}
-		return clause;
-	}
+      const filter = buildFilterCore(filterValue, lambdaParameter);
+      clause = `${propName}/${op}(${filter ? `${lambdaParameter}:${filter}` : ''})`;
+    }
+    return clause;
+  }
 }
 
 function getStringCollectionClause(lambdaParameter: string, value: any, collectionOperator: string, propName: string) {

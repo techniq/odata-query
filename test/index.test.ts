@@ -704,6 +704,22 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     })
 
+    it('should handle collection operator with "and" operator on the item of a simple collection', () => {
+      const filter = {
+        tags: {
+          any: [
+              { [ITEM_ROOT]: 'tag1'},
+              { [ITEM_ROOT]: 'tag2'},
+              { prop: 'tag3'},
+            ]
+        }
+      };
+
+      const expected = "?$filter=tags/any(tags:tags eq 'tag1' and tags eq 'tag2' and tags/prop eq 'tag3')";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    })
+
     it('should handle collection operator with a function on the item of a simple collection', () => {
       const filter = {
         tags: {
