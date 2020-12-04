@@ -208,7 +208,7 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
           const value = (filter as any)[filterKey];
           let propName = '';
           if (propPrefix) {
-            if (filterKey === ITEM_ROOT || Array.isArray(filter)) {
+            if (filterKey === ITEM_ROOT) {
               propName = propPrefix;
             } else if (INDEXOF_REGEX.test(filterKey)) {
               propName = filterKey.replace(INDEXOF_REGEX, (_,$1)=>$1.trim() === ITEM_ROOT ? `(${propPrefix})` : `(${propPrefix}/${$1.trim()})`);
