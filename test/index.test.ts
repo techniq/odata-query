@@ -1580,6 +1580,20 @@ describe('function', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('should support a function on a collection with one null parameter', () => {
+    const func = { Test: { One: 1, Two: null } };
+    const expected = '/Test(One=1,Two=null)';
+    const actual = buildQuery({ func });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support a function on a collection with undefined parameter', () => {
+    const func = { Test: { One: 1, Two: undefined } };
+    const expected = '/Test(One=1)';
+    const actual = buildQuery({ func });
+    expect(actual).toEqual(expected);
+  });
+
   it('should support a function on an entity with parameters', () => {
     const key = 1;
     const func = { Test: { One: 1, Two: 2 } };

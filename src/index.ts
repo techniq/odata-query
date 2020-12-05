@@ -144,14 +144,11 @@ export default function <T>({
       path += `/${func}`;
     } else if (typeof func === 'object') {
       const [funcName] = Object.keys(func);
-      const funcArgs = Object.keys(func[funcName]).reduce(
-        (acc: string[], item) => [...acc, `${item}=${handleValue(func[funcName][item], aliases)}`],
-        []
-      );
+      const funcArgs = handleValue(func[funcName] as Value, aliases);
 
       path += `/${funcName}`;
-      if (funcArgs.length) {
-        path += `(${funcArgs.join(',')})`;
+      if (funcArgs !== "") {
+        path += `(${funcArgs})`;
       }
     }
   }
@@ -387,8 +384,9 @@ function handleValue(value: Value, aliases?: Alias[]): any {
     } else if (value.type === 'json') {
         return escape(JSON.stringify(value.value));
     } else {
-      return Object.keys(value)
-        .map(k => `${k}=${handleValue(value[k], aliases)}`).join(',');
+      return Object.entries(value)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => `${k}=${handleValue(v as Value, aliases)}`).join(',');
     }
     }
     return value;
