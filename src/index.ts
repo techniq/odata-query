@@ -286,6 +286,8 @@ function buildFilter(filters: Filter = {}, propPrefix = ''): string {
                 } else if (COLLECTION_OPERATORS.indexOf(op) !== -1) {
                   const collectionClause = buildCollectionClause(filterKey.toLowerCase(), value[op], op, propName);
                   if (collectionClause) { result.push(collectionClause); }
+                } else if (op === 'has') {
+                  result.push(`${propName} ${op} ${handleValue(value[op])}`);
                 } else if (op === 'in') {
                   const resultingValues = Array.isArray(value[op])
                     ? value[op]

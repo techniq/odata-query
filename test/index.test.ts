@@ -39,6 +39,14 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
+    it('should allow "has" operator', () => {
+      const filter = { SomeProp: { has: { type: "raw", value: "Sales.Pattern'Yellow'" } } };
+      const expected =
+        "?$filter=SomeProp has Sales.Pattern'Yellow'";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
     it('should allow "in" operator', () => {
       const filter = { SomeProp: { in: [1, 2, 3] } };
       const expected =
