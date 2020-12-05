@@ -39,6 +39,14 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
+    it('should allow "has" operator', () => {
+      const filter = { SomeProp: { has: { type: "raw", value: "Sales.Pattern'Yellow'" } } };
+      const expected =
+        "?$filter=SomeProp has Sales.Pattern'Yellow'";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
     it('should allow "in" operator', () => {
       const filter = { SomeProp: { in: [1, 2, 3] } };
       const expected =
@@ -294,12 +302,12 @@ describe('filter', () => {
       const filter = { DateProp: { ge: start, le: end } };
       let expected =
         '?$filter=DateProp ge @start and DateProp le @end&@start=2017-01-01T00:00:00.000Z&@end=2017-03-01T00:00:00.000Z';
-      let actual = buildQuery({ filter, aliases: [start, end] });
+      let actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
       end.value = new Date(Date.UTC(2017, 5, 1));
       expected =
         '?$filter=DateProp ge @start and DateProp le @end&@start=2017-01-01T00:00:00.000Z&@end=2017-06-01T00:00:00.000Z';
-      actual = buildQuery({ filter, aliases: [start, end] });
+      actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
 
@@ -1572,6 +1580,20 @@ describe('function', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('should support a function on a collection with one null parameter', () => {
+    const func = { Test: { One: 1, Two: null } };
+    const expected = '/Test(One=1,Two=null)';
+    const actual = buildQuery({ func });
+    expect(actual).toEqual(expected);
+  });
+
+  it('should support a function on a collection with undefined parameter', () => {
+    const func = { Test: { One: 1, Two: undefined } };
+    const expected = '/Test(One=1)';
+    const actual = buildQuery({ func });
+    expect(actual).toEqual(expected);
+  });
+
   it('should support a function on an entity with parameters', () => {
     const key = 1;
     const func = { Test: { One: 1, Two: 2 } };
@@ -1608,7 +1630,7 @@ describe('function', () => {
     };
     const expected =
       "/Test(SomeCollection=@SomeCollection)?@SomeCollection=['Sean','Jason']";
-    const actual = buildQuery({ func, aliases: [someCollection] });
+    const actual = buildQuery({ func });
     expect(actual).toEqual(expected);
   });
 
@@ -1619,7 +1641,7 @@ describe('function', () => {
     };
     const expected =
       '/Test(SomeCollection=@SomeCollection)?@SomeCollection=%5B%7B%22Name%22%3A%22Sean%22%7D%2C%7B%22Name%22%3A%22Jason%22%7D%5D';
-    const actual = buildQuery({ func, aliases: [someCollection] });
+    const actual = buildQuery({ func });
     expect(actual).toEqual(expected);
   });
 });
