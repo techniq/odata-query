@@ -751,6 +751,13 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
+    it('should handle a decimal number', () => {
+      const filter = { NumberProp: 1.23 };
+      const expected = '?$filter=NumberProp eq 1.23M';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
     it('should handle a string', () => {
       const filter = { StringProp: '2' };
       const expected = "?$filter=StringProp eq '2'";

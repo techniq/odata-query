@@ -362,7 +362,9 @@ function handleValue(value: Value, aliases?: Alias[]): any {
   } else if (value instanceof Date) {
     return value.toISOString();
   } else if (typeof value === 'number') {
-    return value;
+    // Number.isInteger(value) is not supported by IE11
+    const isDecimal = value % 1 !== 0;
+    return isDecimal ? `${value}M`: value;
   } else if (Array.isArray(value)) {
     return `[${value.map(d => handleValue(d)).join(',')}]`;
   } else if (value === null) {
