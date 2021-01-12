@@ -364,9 +364,7 @@ function handleValue(value: Value, aliases?: Alias[]): any {
   } else if (value instanceof Date) {
     return value.toISOString();
   } else if (typeof value === 'number') {
-    // Number.isInteger(value) is not supported by IE11
-    const isDouble = value % 1 !== 0;
-    return isDouble ? `${value}d`: value;
+    return value;
   } else if (Array.isArray(value)) {
     return `[${value.map(d => handleValue(d)).join(',')}]`;
   } else if (value === null) {

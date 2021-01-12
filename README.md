@@ -329,22 +329,6 @@ const filter = f().eq('TypeId', '1')
                   .toString();
 buildQuery({ filter })
 ```
-#### Numbers
-Number can be represented as integer or double.
-
-Integer:
-```js
-const filter = { NumberProp: 1 };
-buildQuery({ filter })
-=> '?$filter=NumberProp eq 1';    
-```
-Double: 
-```js
-const filter = { NumberProp: 1.23 };
-buildQuery({ filter })
-=> '?$filter=NumberProp eq 1.23d';
-```
-
 
 #### Data types
 GUID:
