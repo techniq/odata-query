@@ -329,6 +329,22 @@ const filter = f().eq('TypeId', '1')
                   .toString();
 buildQuery({ filter })
 ```
+#### Numbers
+Number can be represented as integer or double.
+
+Integer:
+```js
+const filter = { NumberProp: 1 };
+buildQuery({ filter })
+=> '?$filter=NumberProp eq 1';    
+```
+Double: 
+```js
+const filter = { NumberProp: 1.23 };
+buildQuery({ filter })
+=> '?$filter=NumberProp eq 1.23d';
+```
+
 
 #### Data types
 GUID:
@@ -351,6 +367,14 @@ const filter = { "someProp": { eq: { type: 'binary', value: 'YmluYXJ5RGF0YQ==' }
 buildQuery({ filter })
 => "?$filter=someProp eq binary'YmluYXJ5RGF0YQ=='"
 ```
+
+Decimal: 
+```js
+const filter = { "someProp": { eq: { type: 'decimal', value: '12.3456789' } } };
+buildQuery({ filter })
+=> "?$filter=someProp eq '12.3456789M'"
+```
+
 Note that as per OData specification, binary data is transmitted as a base64 encoded string. Refer to [Primitive Types in JSON Format](https://www.odata.org/documentation/odata-version-2-0/json-format/), and [binary representation](https://www.odata.org/documentation/odata-version-2-0/overview/).
 
 Other types coming soon

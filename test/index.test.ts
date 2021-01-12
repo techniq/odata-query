@@ -1,4 +1,4 @@
-import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT} from '../src/index';
+import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT, decimal} from '../src/index';
 
 it('should return an empty string by default', () => {
   expect(buildQuery()).toEqual('');
@@ -751,9 +751,16 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should handle a decimal number', () => {
+    it('should handle double number', () => {
       const filter = { NumberProp: 1.23 };
-      const expected = '?$filter=NumberProp eq 1.23M';
+      const expected = '?$filter=NumberProp eq 1.23d';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle decimal number', () => {
+      const filter = { NumberProp: decimal('1.23456789') };
+      const expected = '?$filter=NumberProp eq 1.23456789M';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
