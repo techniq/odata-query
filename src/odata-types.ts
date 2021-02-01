@@ -41,7 +41,9 @@ export enum StandardAggregateMethods {
     countdistinct = "countdistinct",
 }
 
-export type Aggregate = string | { [propertyName: string]: { with: StandardAggregateMethods, as: string } };
+export type AggregateObject = { [propertyName: string]: { with: StandardAggregateMethods, as: string } };
+export type Aggregate = string | AggregateObject;
+
 export type OrderByOptions<T> = keyof T | [keyof T, 'asc' | 'desc'];
 export type ExpandOptions<T> = {
     select: Select<T>;
