@@ -19,7 +19,8 @@ export type PlainObject = { [property: string]: any };
 export type Select<T> = string | keyof T | Array<keyof T>;
 export type NestedOrderBy<T> = { [P in keyof T]?: T[P] extends Array<infer E> ? OrderBy<E> : OrderBy<T[P]> }
 export type OrderBy<T> = string | OrderByOptions<T> | Array<OrderByOptions<T>> | NestedOrderBy<T>;
-export type Filter = string | PlainObject | Array<string | PlainObject>;
+export type TypedFilter<T> = { [P in keyof T]?: any };
+export type Filter<T> = string | PlainObject | TypedFilter<T> | Array<string | PlainObject | TypedFilter<T>>;
 export type NestedExpandOptions<T> = {[P in keyof T]?: (T[P] extends Array<infer E> ? Partial<ExpandOptions<E>> : Partial<ExpandOptions<T[P]>>) };
 export type Expand<T> = string | keyof T | NestedExpandOptions<T> | Array<keyof T | NestedExpandOptions<T>> | Array<string | NestedExpandOptions<T>>;
 export enum StandardAggregateMethods {
@@ -34,17 +35,17 @@ export type Aggregate = string | { [propertyName: string]: { with: StandardAggre
 export type OrderByOptions<T> = keyof T | [ keyof T, 'asc' | 'desc' ];
 export type ExpandOptions<T> = {
   select: Select<T>;
-  filter: Filter;
+  filter: Filter<T>;
   orderBy: OrderBy<T>;
   top: number;
   levels: number | 'max';
-  count: boolean | Filter;
+  count: boolean | Filter<T>;
   expand: Expand<T>;
 }
 
 export type Transform<T> = {
   aggregate?: Aggregate | Array<Aggregate>;
-  filter?: Filter;
+  filter?: Filter<T>;
   groupBy?: GroupBy<T>;
 }
 export type GroupBy<T> = {
@@ -75,7 +76,7 @@ export type QueryOptions<T> = ExpandOptions<T> & {
   skip: number;
   skiptoken: string;
   key: string | number | PlainObject;
-  count: boolean | Filter;
+  count: boolean | Filter<T>;
   action: string;
   func: string | { [functionName: string]: { [parameterName: string]: any } };
   format: string;
@@ -169,7 +170,7 @@ function renderPrimitiveValue(key: string, val: any, aliases: Alias[] = []) {
   return `${key} eq ${handleValue(val, aliases)}`
 }
 
-function buildFilter(filters: Filter = {}, aliases: Alias[] = [], propPrefix = ''): string {
+function buildFilter<T>(filters: Filter<T> = {}, aliases: Alias[] = [], propPrefix = ''): string {
   return ((Array.isArray(filters) ? filters : [filters])
     .reduce((acc: string[], filter) => {
       if (filter) {
@@ -181,7 +182,7 @@ function buildFilter(filters: Filter = {}, aliases: Alias[] = [], propPrefix = '
       return acc;
     }, []) as string[]).join(' and ');
 
-  function buildFilterCore(filter: Filter = {}, aliases: Alias[] = [], propPrefix = '') {
+  function buildFilterCore<T>(filter: Filter<T> = {}, aliases: Alias[] = [], propPrefix = '') {
     let filterExpr = "";
     if (typeof filter === 'string') {
       // Use raw filter string
