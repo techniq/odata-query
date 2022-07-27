@@ -538,13 +538,13 @@ function buildOrderBy<T>(orderBy: OrderBy<T>, prefix: string = ''): string {
       .map(value =>
         (Array.isArray(value) && value.length === 2 && ['asc', 'desc'].indexOf(value[1]) !== -1)? value.join(' ') : value
       )
-      .map(v => `${prefix}${v}`).join(',');
+      .map(v => `${prefix}${String(v)}`).join(',');
   } else if (typeof orderBy === 'object') {
     return Object.entries(orderBy)
       .map(([k, v]) => buildOrderBy(v as OrderBy<any>, `${k}/`))
       .map(v => `${prefix}${v}`).join(',');
   }
-  return `${prefix}${orderBy}`;
+  return `${prefix}${String(orderBy)}`;
 }
 
 function buildUrl(path: string, params: PlainObject): string {
