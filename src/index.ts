@@ -190,6 +190,10 @@ function buildFilter(filters: Filter = {}, aliases: Alias[] = [], propPrefix = '
       const filtersArray = Object.keys(filter).reduce(
         (result: any[], filterKey) => {
           const value = (filter as any)[filterKey];
+          if (value === undefined) {
+            return result;
+	  }
+
           let propName = '';
           if (propPrefix) {
             if (filterKey === ITEM_ROOT) {
@@ -255,6 +259,10 @@ function buildFilter(filters: Filter = {}, aliases: Alias[] = [], propPrefix = '
             } else {
               const operators = Object.keys(value);
               operators.forEach(op => {
+                if (value[op] === undefined) {
+                  return;
+                }
+
                 if (COMPARISON_OPERATORS.indexOf(op) !== -1) {
                   result.push(`${propName} ${op} ${handleValue(value[op], aliases)}`);
                 } else if (LOGICAL_OPERATORS.indexOf(op) !== -1) {
@@ -295,8 +303,6 @@ function buildFilter(filters: Filter = {}, aliases: Alias[] = [], propPrefix = '
                 }
               });
             }
-          } else if (value === undefined) {
-            // Ignore/omit filter if value is `undefined`
           } else {
             throw new Error(`Unexpected value type: ${value}`);
           }
