@@ -208,7 +208,7 @@ describe('filter', () => {
 
     it('should handle simple logical operators (and, or, etc) as an object (no parens)', () => {
       const filter = { and: { SomeProp: 1, AnotherProp: 2 } };
-      const expected = '?$filter=SomeProp eq 1 and AnotherProp eq 2';
+      const expected = '?$filter=(SomeProp eq 1 and AnotherProp eq 2)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -323,7 +323,7 @@ describe('filter', () => {
           },
         ],
       };
-      const expected = '?$filter=((Prop1 eq 1) or (Prop2 eq 2 and Prop3 eq 3))';
+      const expected = '?$filter=((Prop1 eq 1) or ((Prop2 eq 2 and Prop3 eq 3)))';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
