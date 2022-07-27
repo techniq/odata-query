@@ -336,7 +336,7 @@ describe('filter', () => {
           Prop3: 3,
         },
       };
-      const expected = '?$filter=Prop1 eq 1 and (Prop2 eq 2 and Prop3 eq 3)';
+      const expected = '?$filter=Prop1 eq 1 and (Prop2 eq 2 or Prop3 eq 3)';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
