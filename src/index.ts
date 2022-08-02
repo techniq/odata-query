@@ -250,7 +250,7 @@ function buildFilter(filters: Filter = {}, aliases: Alias[] = [], propPrefix = '
               if (op === 'not') {
                 result.push(parseNot(builtFilters as string[]));
               } else {
-                result.push(`${builtFilters.join(` ${op} `)}`);
+                result.push(`(${builtFilters.join(` ${op} `)})`);
               }
             }
           } else if (typeof value === 'object') {
