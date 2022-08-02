@@ -1,6 +1,6 @@
 {
   "name": "odata-query",
-  "version": "7.0.0",
+  "version": "7.0.2",
   "author": "Sean Lynch <techniq35@gmail.com>",
   "license": "MIT",
   "repository": "techniq/odata-query",
@@ -27,6 +27,7 @@
     "build": "tsc -p tsconfig.cjs.json & tsc -p tsconfig.esm.json & tsc -p tsconfig.dts.json & browserify -e src/index-browser.ts -p [ tsify ] -o dist/browser/index.js",
     "test": "jest",
     "test-watch": "jest --watchAll",
-    "preversion": "npm run build"
+    "preversion": "npm run build",
+    "prepublishOnly": "npm run build"
   }
 }
