@@ -6,6 +6,7 @@ const SUPPORTED_EXPAND_PROPERTIES = [
   'expand',
   'levels',
   'select',
+  'skip',
   'top',
   'count',
   'orderby',
@@ -36,6 +37,7 @@ export type ExpandOptions<T> = {
   select: Select<T>;
   filter: Filter;
   orderBy: OrderBy<T>;
+  skip: number;
   top: number;
   levels: number | 'max';
   count: boolean | Filter;
@@ -449,6 +451,7 @@ function buildExpand<T>(expands: Expand<T>): string {
               break;
             case 'levels':
             case 'count':
+            case 'skip':
             case 'top':
               value = `${(expands as NestedExpandOptions<any>)[key]}`;
               break;
