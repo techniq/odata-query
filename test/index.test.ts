@@ -1501,6 +1501,13 @@ describe('expand', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('should allow expand with skip', () => {
+    const expand = { Friends: { skip: 10 } };
+    const expected = '?$expand=Friends($skip=10)';
+    const actual = buildQuery({ expand });
+    expect(actual).toEqual(expected);
+  });
+
   it('should allow expand with top', () => {
     const expand = { Friends: { top: 10 } };
     const expected = '?$expand=Friends($top=10)';
