@@ -1048,6 +1048,59 @@ describe('transform', () => {
     const actual = buildQuery({ transform });
     expect(actual).toEqual(expected);
   });
+  
+    it('simple aggregation as object without "with"', () => {
+    const transform = {
+      aggregate: {
+        Amount: {
+          as: "Total",
+        },
+      },
+    };
+    const expected = "?$apply=aggregate(Amount as Total)";
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('multiple aggregations with different properties as object without "with"', () => {
+    const transform = [
+      {
+        aggregate: {
+          Amount: {
+            as: "Total",
+          },
+          Id: {
+            as: "Count",
+          },
+        },
+      },
+    ];
+    const expected = "?$apply=aggregate(Amount as Total,Id as Count)";
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
+
+  it('multiple aggregations with same property as array without "with"', () => {
+    const transform = [
+      {
+        aggregate: [
+          {
+            Amount: {
+              as: "Total",
+            },
+          },
+          {
+            Amount: {
+              as: "Max",
+            },
+          },
+        ],
+      },
+    ];
+    const expected = "?$apply=aggregate(Amount as Total,Amount as Max)";
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
 
   it('simple filter', () => {
     const transform = [

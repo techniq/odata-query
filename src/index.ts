@@ -513,10 +513,14 @@ function buildAggregate(aggregate: Aggregate | Aggregate[]) {
         : Object.keys(aggregateItem).map(aggregateKey => {
           const aggregateValue = aggregateItem[aggregateKey];
 
-          // TODO: Are these always required?  Can/should we default them if so?
+          if (!aggregateValue.with && aggregateValue.as) {
+            return `${aggregateKey} as ${aggregateValue.as}`;
+          }
+
           if (!aggregateValue.with) {
             throw new Error(`'with' property required for '${aggregateKey}'`);
           }
+
           if (!aggregateValue.as) {
             throw new Error(`'as' property required for '${aggregateKey}'`);
           }
