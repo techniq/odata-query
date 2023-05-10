@@ -1,4 +1,5 @@
-import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT, decimal} from '../src/index';
+import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT, decimal, TypedFilter } from '../src/index';
+import { Square } from './test-interface'; 
 
 it('should return an empty string by default', () => {
   expect(buildQuery()).toEqual('');
@@ -35,6 +36,32 @@ describe('filter', () => {
       ];
       const expected =
         "?$filter=SomeProp eq 1 and AnotherProp eq 2 and startswith(Name, 'R')";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+    
+    it('should handle basic typed filter without operator', () => {
+      const filter: TypedFilter<Square> = { Height: 1 };
+      const expected = '?$filter=Height eq 1';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle typed filter with operator', () => {
+      const filter: TypedFilter<Square> = { Height: { lt: 5 } };
+      const expected = '?$filter=Height lt 5';
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should allow passing filter as an array of typed filters and strings', () => {
+      const filter: Array<TypedFilter<Square> | string> = [
+        { Height: 1 },
+        { Width: { lt: 5 } },
+        "startswith(Name, 'R')",
+      ];
+      const expected =
+        "?$filter=Height eq 1 and Width lt 5 and startswith(Name, 'R')";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
