@@ -17,7 +17,7 @@ const FUNCTION_REGEX = /\((.*)\)/;
 const INDEXOF_REGEX = /(?!indexof)\((\w+)\)/;
 
 export type PlainObject = { [property: string]: any };
-export type Select<T> = string | keyof T | Array<keyof T>;
+export type Select<T> = string | string[] | keyof T | Array<keyof T>;
 export type NestedOrderBy<T> = { [P in keyof T]?: T[P] extends Array<infer E> ? OrderBy<E> : OrderBy<T[P]> }
 export type OrderBy<T> = string | OrderByOptions<T> | Array<OrderByOptions<T>> | NestedOrderBy<T>;
 export type Filter = string | PlainObject | Array<string | PlainObject>;
