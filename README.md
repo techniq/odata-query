@@ -23,41 +23,48 @@ where the query object syntax for `{...}` is defined below.  There is also [reac
 ## Usage
 See [tests](src/index.test.js) for examples as well
 
-- [Filtering](#filtering)
-  - [Simple equality filter](#simple-equality-filter)
-  - [Comparison operators](#comparison-operators)
-  - [Logical operators](#logical-operators)
-    - [Implied `and` with an array of objects](#implied-and-with-an-array-of-objects)
-    - [Implied `and` with multiple comparison operators for a single property](#implied-and-with-multiple-comparison-operators-for-a-single-property)
-    - [Explicit operator](#explicit-operator)
-  - [Collection operators](#collection-operators) - `any`, `all`
-    - [Implied and with an object or array of objects](#implied-and)
-    - [Explicit operator (`and`, `or`, and `not`)](#explicit-operator-and-or)
-    - [Implied all operators on collection item itself](#implied-all-operators-on-collection-item-itself)
-  - [Functions](#functions)
-    - [String functions returning boolean](#string-functions-returning-boolean)
-    - [Functions returning non-boolean values (string, int)](#functions-returning-non-boolean-values-string-int)
-    - [Functions returning non-boolean values (string, int) with parameters](#functions-returning-non-boolean-values-string-int-with-parameters)
-  - [Strings](#strings)
-  - [Data types](#data-types)
-  - [Search](#search)
-- [Selecting](#selecting)
-- [Ordering](#ordering)
-- [Expanding](#expanding)
-  - [Nested expand using slash seperator](#nested-expand-using-slash-seperator)
-  - [Nested expand with an object](#nested-expand-with-an-object)
-  - [Multiple expands as an array](#multiple-expands-as-an-array)
-  - [Filter expanded items](#filter-expanded-items)
-  - [Select only specific properties of expanded items](#select-only-specific-properties-of-expanded-items)
-  - [Return only a subset of expanded items](#return-only-a-subset-of-expanded-items)
-  - [Order expanded items](#order-expanded-items)
-  - [filter, select, top, and orderBy can be used together](#filter-select-top-and-orderby-can-be-used-together)
-- [Pagination (skip and top)](#pagination-skip-and-top)
-- [Single-item (key)](#single-item-key)
-- [Counting](#counting)
-- [Actions](#actions)
-- [Functions](#functions-1)
-- [Transforms](#transforms)
+- [odata-query](#odata-query)
+  - [Install](#install)
+  - [Usage](#usage)
+    - [Filtering](#filtering)
+      - [Simple equality filter](#simple-equality-filter)
+      - [Comparison operators](#comparison-operators)
+      - [Logical operators](#logical-operators)
+        - [Implied `and` with an array of objects](#implied-and-with-an-array-of-objects)
+        - [Implied `and` with multiple comparison operators for a single property](#implied-and-with-multiple-comparison-operators-for-a-single-property)
+        - [Explicit operator](#explicit-operator)
+      - [Collection operators](#collection-operators)
+        - [Empty `any`](#empty-any)
+        - [Implied `and`](#implied-and)
+        - [Explicit operator (`and`, `or`, and `not`)](#explicit-operator-and-or-and-not)
+        - [Implied all operators on collection item itself](#implied-all-operators-on-collection-item-itself)
+      - [Functions](#functions)
+        - [String functions returning boolean](#string-functions-returning-boolean)
+        - [Functions returning non-boolean values (string, int)](#functions-returning-non-boolean-values-string-int)
+        - [Functions returning non-boolean values (string, int) with parameters](#functions-returning-non-boolean-values-string-int-with-parameters)
+      - [Strings](#strings)
+      - [Data types](#data-types)
+      - [Search](#search)
+    - [Selecting](#selecting)
+    - [Ordering](#ordering)
+    - [Expanding](#expanding)
+      - [Nested expand using slash seperator](#nested-expand-using-slash-seperator)
+      - [Nested expand with an object](#nested-expand-with-an-object)
+      - [Multiple expands as an array](#multiple-expands-as-an-array)
+      - [Filter expanded items](#filter-expanded-items)
+      - [Select only specific properties of expanded items](#select-only-specific-properties-of-expanded-items)
+      - [Return only a subset of expanded items](#return-only-a-subset-of-expanded-items)
+      - [Order expanded items](#order-expanded-items)
+      - [`filter`, `select`, `top`, and `orderBy` can be used together](#filter-select-top-and-orderby-can-be-used-together)
+    - [Pagination (skip and top)](#pagination-skip-and-top)
+      - [Get page 3 (25 records per page)](#get-page-3-25-records-per-page)
+    - [Single-item (key)](#single-item-key)
+    - [Counting](#counting)
+    - [Computing](#computing)
+    - [Actions](#actions)
+    - [Functions](#functions-1)
+    - [Transforms](#transforms)
+  - [OData specs](#odata-specs)
 
 ### Filtering
 ```js
@@ -498,6 +505,13 @@ Or you can return only the count by passing a filter object to `count` (or empty
 const count = { PropName: 1 }
 const query = buildQuery({ count })
 => '/$count?$filter=PropName eq 1'
+```
+
+### Computing
+Compute a dynamic property from other properties within the model
+```js
+buildQuery({select: ['total'], compute: 'credits sub debits as total' })
+=> '?$select=total&$compute=credits sub debits as total'
 ```
 
 ### Actions

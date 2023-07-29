@@ -1,9 +1,9 @@
 {
   "name": "odata-query",
-  "version": "7.0.4",
-  "author": "Sean Lynch <techniq35@gmail.com>",
+  "version": "7.1.0",
+  "author": "Christopher Lenard <lenardchristopher@gmail.com>",
   "license": "MIT",
-  "repository": "techniq/odata-query",
+  "repository": "lenardchristopher/odata-query",
   "main": "dist/commonjs/index.js",
   "module": "dist/esm/index.js",
   "typings": "dist/index.d.ts",
@@ -11,7 +11,7 @@
     "dist"
   ],
   "dependencies": {
-    "tslib": "^2.4.0"
+    "tslib": "^2.6.1"
   },
   "devDependencies": {
     "@types/jest": "^28.1.6",
