@@ -570,5 +570,5 @@ function buildUrl(path: string, params: PlainObject): string {
 }
 
 function parseNot(builtFilters: string[]): string {
-  return `not(${builtFilters.join(' and ')})`;
+  return `not (${builtFilters.join(' and ')})`;
 }
