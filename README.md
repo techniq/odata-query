@@ -4,11 +4,7 @@ OData v4 query builder that uses a simple object-based syntax similar to [MongoD
 
 ## Install
 ```
-yarn add odata-query
-```
-or
-```
-npm install --save odata-query
+npm install odata-query
 ```
 
 and then use the library
