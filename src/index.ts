@@ -357,14 +357,19 @@ function getStringCollectionClause(lambdaParameter: string, value: any, collecti
 	return clause;
 }
 
+/**
+ * Odata have to deal with some characters
+ * ";,/?:@&=+$#" theses reserved characters have to be percented
+ * and space character has to be percented that's why we use encodeURIComponent.
+ * but the "'" char crash the request so we double it.
+ * encodeURIComponent encode in unicode, so now it handle unicode chars
+ * "-_.!*~'()" moreover theses unreserved chars are not processed by encodeURIComponent coz they are unreserved chars
+ * @param string 
+ * @returns encoded uri parameters
+ */
 function escapeIllegalChars(string: string) {
-  string = string.replace(/%/g, '%25');
-  string = string.replace(/\+/g, '%2B');
-  string = string.replace(/\//g, '%2F');
-  string = string.replace(/\?/g, '%3F');
-  string = string.replace(/#/g, '%23');
-  string = string.replace(/&/g, '%26');
   string = string.replace(/'/g, "''");
+  string = encodeURIComponent(string);
   return string;
 }
 
@@ -394,7 +399,7 @@ function handleValue(value: Value, aliases?: Alias[]): any {
           aliases.push(value as Alias);
         return `@${(value as Alias).name}`;
       case 'json':
-        return escape(JSON.stringify(value.value));
+        return encodeURIComponent(JSON.stringify(value.value));
       case 'decimal':
         return `${value.value}M`;
       default:

@@ -14,6 +14,28 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
+    it('should handle basic filter', () => {
+      const filter = { lang: 'en', clientCode: 'TFG' };
+      const expected = "?$filter=lang eq 'en' and clientCode eq 'TFG'";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+    
+    it('should handle basic filter with select', () => {
+      const filter = { lang: 'en'};
+      const select = ['code', 'value']
+      const expected = "?$select=code,value&$filter=lang eq 'en'";
+      const actual = buildQuery({ filter, select });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should handle basic filter with iso chars', () => {
+      const filter = { lang: 'en', fullname: 'Mike Bobsoñ' };
+      const expected = "?$filter=lang eq 'en' and fullname eq 'Mike%20Bobso%C3%B1'";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+
     it('should handle filter with operator', () => {
       const filter = { SomeProp: { lt: 5 } };
       const expected = '?$filter=SomeProp lt 5';
@@ -90,7 +112,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        "?$filter=contains(SomeNames,'Bob') and SomeNames in ('Peter Newman','Bob Ross','Bobby Parker','Mike Bobson')";
+        "?$filter=contains(SomeNames,'Bob') and SomeNames in ('Peter%20Newman','Bob%20Ross','Bobby%20Parker','Mike%20Bobson')";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -662,7 +684,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        "?$filter=Tasks/any(tasks:tasks/CreatedBy/Name eq 'Sean Lynch' and tasks/StatusId eq 300)";
+        "?$filter=Tasks/any(tasks:tasks/CreatedBy/Name eq 'Sean%20Lynch' and tasks/StatusId eq 300)";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -1634,7 +1656,7 @@ describe('expand', () => {
 
   it('should allow expand with filter', () => {
     const expand = { Trips: { filter: { Name: 'Trip in US' } } };
-    const expected = "?$expand=Trips($filter=Name eq 'Trip in US')";
+    const expected = "?$expand=Trips($filter=Name eq 'Trip%20in%20US')";
     const actual = buildQuery({ expand });
     expect(actual).toEqual(expected);
   });
