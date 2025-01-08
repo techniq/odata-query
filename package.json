@@ -25,6 +25,7 @@
   },
   "scripts": {
     "prebuild": "rimraf dist",
+    "prepare": "npm run build",
     "build": "tsc -p tsconfig.cjs.json & tsc -p tsconfig.esm.json & tsc -p tsconfig.dts.json & browserify -e src/index-browser.ts -p [ tsify ] -o dist/browser/index.js",
     "test": "jest",
     "test-watch": "jest --watchAll",
