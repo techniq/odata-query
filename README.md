@@ -295,7 +295,7 @@ const filter = { PropName: { contains: 'foo' } };
 buildQuery({ filter })
 => "$filter=contains(PropName,'foo')"
 ```
-Supported operators: `startswith`, `endswith`, `contains`
+Supported operators: `startswith`, `endswith`, `contains`, `matchespattern`
 
 ##### Functions returning non-boolean values (string, int)
 ```js

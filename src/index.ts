@@ -1,7 +1,7 @@
 const COMPARISON_OPERATORS = ['eq', 'ne', 'gt', 'ge', 'lt', 'le'];
 const LOGICAL_OPERATORS = ['and', 'or', 'not'];
 const COLLECTION_OPERATORS = ['any', 'all'];
-const BOOLEAN_FUNCTIONS = ['startswith', 'endswith', 'contains'];
+const BOOLEAN_FUNCTIONS = ['startswith', 'endswith', 'contains', 'matchespattern'];
 const SUPPORTED_EXPAND_PROPERTIES = [
   'expand',
   'levels',
@@ -295,7 +295,7 @@ function buildFilter<T>(filters: Filter<T> = {}, aliases: Alias[] = [], propPref
                     propName + ' in (' + resultingValues.map((v: any) => handleValue(v, aliases)).join(',') + ')'
                   );
                 } else if (BOOLEAN_FUNCTIONS.indexOf(op) !== -1) {
-                  // Simple boolean functions (startswith, endswith, contains)
+                  // Simple boolean functions (startswith, endswith, contains, matchespattern)
                   result.push(`${op}(${propName},${handleValue(value[op], aliases)})`);
                 } else {
                   // Nested property
