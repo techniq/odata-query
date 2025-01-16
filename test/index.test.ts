@@ -132,7 +132,7 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it.skip('should handle nested properties on the same property (implicit "and")', () => {
+    it('should handle nested properties on the same property (implicit "and")', () => {
       const filter = {
         SomeProp: {
           NestedProp1: 1,
@@ -140,7 +140,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        '?$filter=(SomeProp/NestedProp1 eq 1 and SomeProp/NestedProp2 eq 2)';
+        '?$filter=SomeProp/NestedProp1 eq 1 and SomeProp/NestedProp2 eq 2';
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -466,8 +466,7 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    // TODO: duplicating filter clauses `(Prop2/NestedProp2/DeeplyNestedProp2 eq 2 and Prop2/NestedProp3 ne null)`.  Still logically the same result
-    it.skip('should handle nested logical operators and deeply nested properties on same property using objects (shorthand)', () => {
+    it('should handle nested logical operators and deeply nested properties on same property using objects (shorthand)', () => {
       const filter = {
         Prop1: {
           NestedProp1: 1,

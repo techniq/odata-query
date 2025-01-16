@@ -111,7 +111,7 @@ export default function <T>({
   // key is not (null, undefined)
   if (key != undefined) {
     path += `(${handleValue(key as Value, aliases)})`;
-    }
+  }
 
   if (filter || typeof count === 'object')
     params.$filter = buildFilter(typeof count === 'object' ? count : filter, aliases);
@@ -195,7 +195,7 @@ function buildFilter<T>(filters: Filter<T> = {}, aliases: Alias[] = [], propPref
           const value = (filter as any)[filterKey];
           if (value === undefined) {
             return result;
-	  }
+          }
 
           let propName = '';
           if (propPrefix) {
@@ -214,7 +214,7 @@ function buildFilter<T>(filters: Filter<T> = {}, aliases: Alias[] = [], propPref
 
           if (filterKey === ITEM_ROOT && Array.isArray(value)) {
             return result.concat(
-                value.map((arrayValue: any) => renderPrimitiveValue(propName, arrayValue))
+              value.map((arrayValue: any) => renderPrimitiveValue(propName, arrayValue))
             )
           }
 
@@ -299,7 +299,7 @@ function buildFilter<T>(filters: Filter<T> = {}, aliases: Alias[] = [], propPref
                   result.push(`${op}(${propName},${handleValue(value[op], aliases)})`);
                 } else {
                   // Nested property
-                  const filter = buildFilterCore(value, aliases, propName);
+                  const filter = buildFilterCore({ [op]: value[op] }, aliases, propName);
                   if (filter) {
                     result.push(filter);
                   }
@@ -350,11 +350,11 @@ function buildFilter<T>(filters: Filter<T> = {}, aliases: Alias[] = [], propPref
 }
 
 function getStringCollectionClause(lambdaParameter: string, value: any, collectionOperator: string, propName: string) {
-	let clause = '';
-	const conditionOperator = collectionOperator == 'all' ? 'ne' : 'eq';
-	clause = `${propName}/${collectionOperator}(${lambdaParameter}: ${lambdaParameter} ${conditionOperator} '${value}')`
+  let clause = '';
+  const conditionOperator = collectionOperator == 'all' ? 'ne' : 'eq';
+  clause = `${propName}/${collectionOperator}(${lambdaParameter}: ${lambdaParameter} ${conditionOperator} '${value}')`
 
-	return clause;
+  return clause;
 }
 
 function escapeIllegalChars(string: string) {
