@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'vitest'
+
 import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT, decimal, TypedFilter } from '../src/index';
 import { Square } from './test-interface'; 
 
