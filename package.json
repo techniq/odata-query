@@ -5,9 +5,13 @@
   "author": "Sean Lynch <techniq35@gmail.com>",
   "license": "MIT",
   "repository": "techniq/odata-query",
-  "main": "dist/commonjs/index.js",
-  "module": "dist/esm/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "dist/index.js.mjs",
+  "module": "dist/index.js.mjs",
+  "exports": {
+    "import": "./dist/index.js.mjs",
+    "types": "./dist/types/index.d.ts"
+  },
+  "types": "./dist/types/index.d.ts",
   "files": [
     "dist"
   ],
@@ -18,17 +22,14 @@
     "@changesets/cli": "2.27.10",
     "@svitejs/changesets-changelog-github-compact": "^1.2.0",
     "@types/jest": "^28.1.6",
-    "browserify": "^17.0.0",
     "jest": "^28.1.3",
-    "rimraf": "^3.0.2",
     "ts-jest": "^28.0.7",
-    "tsify": "^5.0.4",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "vite": "^6.3.5"
   },
   "scripts": {
-    "prebuild": "rimraf dist",
     "prepare": "npm run build",
-    "build": "tsc -p tsconfig.cjs.json & tsc -p tsconfig.esm.json & tsc -p tsconfig.dts.json & browserify -e src/index-browser.ts -p [ tsify ] -o dist/browser/index.js",
+    "build": "tsc -p tsconfig.esm.json & npx vite build",
     "test": "jest",
     "test-watch": "jest --watchAll",
     "preversion": "npm run build",
