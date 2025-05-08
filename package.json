@@ -36,5 +36,6 @@
     "changeset:version": "changeset version",
     "changeset:release": "changeset publish",
     "up-deps": "pnpm update -r -i --latest"
-  }
+  },
+  "packageManager": "pnpm@9.1.1"
 }
