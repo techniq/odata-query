@@ -34,6 +34,7 @@
     "prepublishOnly": "npm run build",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "changeset:release": "changeset publish"
+    "changeset:release": "changeset publish",
+    "up-deps": "pnpm update -r -i --latest"
   }
 }
