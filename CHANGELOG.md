@@ -1,5 +1,15 @@
 # odata-query
 
+## 8.0.0
+
+### Major Changes
+
+- breaking: Remove CommonJS support (ESM only) ([#130](https://github.com/techniq/odata-query/pull/130))
+
+### Patch Changes
+
+- build: Use vite and vitest ([#130](https://github.com/techniq/odata-query/pull/130))
+
 ## 7.0.9
 
 ### Patch Changes
