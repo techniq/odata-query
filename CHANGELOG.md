@@ -1,5 +1,11 @@
 # odata-query
 
+## 8.0.1
+
+### Patch Changes
+
+- Fix types publishing ([`fd608f2`](https://github.com/techniq/odata-query/commit/fd608f2ceaaef21f8ec5a27637b42f4dda594a85))
+
 ## 8.0.0
 
 ### Major Changes
