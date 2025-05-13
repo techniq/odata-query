@@ -27,7 +27,7 @@
   },
   "scripts": {
     "prepare": "pnpm run build",
-    "build": "npx vite build && tsc -p tsconfig.esm.json",
+    "build": "npx vite build && tsc --listEmittedFiles",
     "test": "vitest run",
     "test-watch": "vitest",
     "preversion": "pnpm run build",
