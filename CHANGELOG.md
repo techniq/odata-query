@@ -1,5 +1,11 @@
 # odata-query
 
+## 8.0.3
+
+### Patch Changes
+
+- fix: Reorder build (`vite build` then `tsc` type generation) to fix removed of `.d.ts` files by `vite build` ([`0fa66dd`](https://github.com/techniq/odata-query/commit/0fa66dd7465f3fdd3952dbf75a9b5b3318d34399))
+
 ## 8.0.2
 
 ### Patch Changes
