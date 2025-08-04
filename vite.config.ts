@@ -5,8 +5,8 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       name: 'odata-query',
-      fileName:'index.js',
-      formats: ['es'],
+      fileName: (format) => `index.${format}.js`,
+      formats: ['es', 'cjs'],
     },
     outDir: 'dist',
   }

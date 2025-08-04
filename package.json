@@ -5,11 +5,12 @@
   "author": "Sean Lynch <techniq35@gmail.com>",
   "license": "MIT",
   "repository": "techniq/odata-query",
-  "main": "dist/index.js.mjs",
-  "module": "dist/index.js.mjs",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.es.js",
   "exports": {
-    "import": "./dist/index.js.mjs",
-    "types": "./dist/index.d.ts"
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.es.js",
+    "require": "./dist/index.cjs.js"
   },
   "types": "./dist/index.d.ts",
   "files": [
