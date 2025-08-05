@@ -10,9 +10,9 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       output: [
-        {format: 'es', entryFileNames: 'index.js.mjs'},
-        {format: 'cjs', entryFileNames: 'index.cjs.js'}
-	  ]
-	}
+        {format: 'es', entryFileNames: 'index.mjs'},
+        {format: 'cjs', entryFileNames: 'index.cjs'}
+      ]
+    }
   }
 });
