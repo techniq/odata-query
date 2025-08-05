@@ -6,10 +6,10 @@
   "license": "MIT",
   "repository": "techniq/odata-query",
   "main": "./dist/index.cjs.js",
-  "module": "./dist/index.es.js",
+  "module": "./dist/index.js.mjs",
   "exports": {
     "types": "./dist/index.d.ts",
-    "import": "./dist/index.es.js",
+    "import": "./dist/index.js.mjs",
     "require": "./dist/index.cjs.js"
   },
   "types": "./dist/index.d.ts",

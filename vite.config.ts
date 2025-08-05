@@ -5,9 +5,14 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       name: 'odata-query',
-      fileName: (format) => `index.${format}.js`,
       formats: ['es', 'cjs'],
     },
     outDir: 'dist',
+    rollupOptions: {
+      output: [
+        {format: 'es', entryFileNames: 'index.js.mjs'},
+        {format: 'cjs', entryFileNames: 'index.cjs.js'}
+	  ]
+	}
   }
 });
