@@ -1,5 +1,11 @@
 # odata-query
 
+## 8.0.4
+
+### Patch Changes
+
+- fix: Restore CommonJS support ([#139](https://github.com/techniq/odata-query/pull/139))
+
 ## 8.0.3
 
 ### Patch Changes
