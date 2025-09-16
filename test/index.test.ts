@@ -1270,6 +1270,24 @@ describe('transform', () => {
     const actual = buildQuery({ transform });
     expect(actual).toEqual(expected);
   });
+
+  it('respect order of operations', () => {
+    const transform = {
+      filter: {
+        PropName: 1,
+      },
+      aggregate: {
+        Amount: {
+          with: 'max',
+          as: 'Max',
+        },
+      }
+    };
+
+    const expected = '?$apply=filter(PropName eq 1)/aggregate(Amount with max as Max)';
+    const actual = buildQuery({ transform });
+    expect(actual).toEqual(expected);
+  });
 });
 
 describe('select', () => {
