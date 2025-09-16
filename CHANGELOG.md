@@ -1,5 +1,11 @@
 # odata-query
 
+## 8.0.5
+
+### Patch Changes
+
+- fix: apply transform operations in the correct order ([#144](https://github.com/techniq/odata-query/pull/144))
+
 ## 8.0.4
 
 ### Patch Changes
