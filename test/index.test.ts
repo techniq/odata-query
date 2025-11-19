@@ -984,6 +984,20 @@ describe('search', () => {
     const actual = buildQuery({ search });
     expect(actual).toEqual(expected);
   });
+
+  it.each([
+    ['/','%2F'],
+    ['?','%3F'],
+    ['#','%23'],
+    ['&','%26'],
+    ['+','%2B'],
+    ['%','%25']
+  ])('should encode the `%s` character as `%s` in strings', (char, encodedChar) => {
+    const search = `X${char}Y`;
+    const expected = `?$search=X${encodedChar}Y`;
+    const actual = buildQuery({ search });
+    expect(actual).toEqual(expected);
+  });
 });
 
 describe('transform', () => {

@@ -165,7 +165,11 @@ export default function <T>({
       , {}));
   }
 
-  return buildUrl(path, { $select, $search, $skiptoken, $format, ...params });
+  if ($search) {
+    params.$search = escapeIllegalChars($search);
+  }
+
+  return buildUrl(path, { $select, $skiptoken, $format, ...params });
 }
 
 function renderPrimitiveValue(key: string, val: any, aliases: Alias[] = []) {
