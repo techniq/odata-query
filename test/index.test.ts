@@ -1,6 +1,6 @@
 import { describe, expect, test as it } from 'vitest'
 
-import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT, decimal, TypedFilter } from '../src/index';
+import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT, decimal, TypedFilter} from '../src/index';
 import { Square } from './test-interface'; 
 
 it('should return an empty string by default', () => {
@@ -92,7 +92,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        "?$filter=contains(SomeNames,'Bob') and SomeNames in ('Peter Newman','Bob Ross','Bobby Parker','Mike Bobson')";
+        "?$filter=contains(SomeNames,'Bob') and SomeNames in ('Peter%20Newman','Bob%20Ross','Bobby%20Parker','Mike%20Bobson')";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -663,7 +663,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        "?$filter=Tasks/any(tasks:tasks/CreatedBy/Name eq 'Sean Lynch' and tasks/StatusId eq 300)";
+        "?$filter=Tasks/any(tasks:tasks/CreatedBy/Name eq 'Sean%20Lynch' and tasks/StatusId eq 300)";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -806,7 +806,7 @@ describe('filter', () => {
       expect(actual).toEqual(expected);
     });
 
-    it("should escape the `'` character in strings", () => {
+    it("should escape the `'` character as `''` in strings", () => {
       const filter = { StringProp: "O'Dimm" };
       const expected = "?$filter=StringProp eq 'O''Dimm'";
       const actual = buildQuery({ filter });
@@ -980,9 +980,82 @@ describe('filter', () => {
 describe('search', () => {
   it('should handle basic search string', () => {
     const search = 'blue OR green';
-    const expected = '?$search=blue OR green';
+    const expected = '?$search=blue%20OR%20green';
     const actual = buildQuery({ search });
     expect(actual).toEqual(expected);
+  });
+
+  it.each([
+    // Characters historically encoded in earlier versions
+    ['%','%25'],
+    ['+','%2B'],
+    ['/','%2F'],
+    ['?','%3F'],
+    ['#','%23'],
+    ['&','%26'],
+
+    // Unsafe characters
+    [' ','%20'],
+    ['"','%22'],
+    ['<','%3C'],
+    ['>','%3E'],
+    ['\\','%5C'],
+    ['^','%5E'],
+    ['`','%60'],
+    ['{','%7B'],
+    ['}','%7D'],
+    ['|','%7C'],
+
+    // Control characters
+    ['\u0000','%00'],
+    ['\u0001','%01'],
+    ['\u0002','%02'],
+    ['\u0003','%03'],
+    ['\u0004','%04'],
+    ['\u0005','%05'],
+    ['\u0006','%06'],
+    ['\u0007','%07'],
+    ['\u0008','%08'],
+    ['\u0009','%09'],
+    ['\u000A','%0A'],
+    ['\u000B','%0B'],
+    ['\u000C','%0C'],
+    ['\u000D','%0D'],
+    ['\u000E','%0E'],
+    ['\u000F','%0F'],
+    ['\u0010','%10'],
+    ['\u0011','%11'],
+    ['\u0012','%12'],
+    ['\u0013','%13'],
+    ['\u0014','%14'],
+    ['\u0015','%15'],
+    ['\u0016','%16'],
+    ['\u0017','%17'],
+    ['\u0018','%18'],
+    ['\u0019','%19'],
+    ['\u001A','%1A'],
+    ['\u001B','%1B'],
+    ['\u001C','%1C'],
+    ['\u001D','%1D'],
+    ['\u001E','%1E'],
+    ['\u001F','%1F'],
+    ['\u007F','%7F'],
+
+    // Non-ASCII characters
+    ['\u0080','%C2%80']
+
+  ])('should encode the `%s` character as `%s` in strings', (char, encodedChar) => {
+    const search = `X${char}Y`;
+    const expected = `?$search=X${encodedChar}Y`;
+    const actual = buildQuery({ search });
+    expect(actual).toEqual(expected);
+  });
+
+  it("should NOT encode the `'` character as `''` in strings", () => {
+    const search = `X'Y`;
+    const unexpected = `?$search=X''Y`;
+    const actual = buildQuery({ search });
+    expect(actual).not.toEqual(unexpected);
   });
 });
 
@@ -1653,7 +1726,7 @@ describe('expand', () => {
 
   it('should allow expand with filter', () => {
     const expand = { Trips: { filter: { Name: 'Trip in US' } } };
-    const expected = "?$expand=Trips($filter=Name eq 'Trip in US')";
+    const expected = "?$expand=Trips($filter=Name eq 'Trip%20in%20US')";
     const actual = buildQuery({ expand });
     expect(actual).toEqual(expected);
   });

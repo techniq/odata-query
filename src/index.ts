@@ -165,7 +165,11 @@ export default function <T>({
       , {}));
   }
 
-  return buildUrl(path, { $select, $search, $skiptoken, $format, ...params });
+  if ($search) {
+    params.$search = encodeURIComponent($search);
+  }
+
+  return buildUrl(path, { $select, $skiptoken, $format, ...params });
 }
 
 function renderPrimitiveValue(key: string, val: any, aliases: Alias[] = []) {
@@ -356,14 +360,8 @@ function getStringCollectionClause(lambdaParameter: string, value: any, collecti
 }
 
 function escapeIllegalChars(string: string) {
-  string = string.replace(/%/g, '%25');
-  string = string.replace(/\+/g, '%2B');
-  string = string.replace(/\//g, '%2F');
-  string = string.replace(/\?/g, '%3F');
-  string = string.replace(/#/g, '%23');
-  string = string.replace(/&/g, '%26');
   string = string.replace(/'/g, "''");
-  return string;
+  return encodeURIComponent(string);
 }
 
 function handleValue(value: Value, aliases?: Alias[]): any {
