@@ -1,5 +1,11 @@
 # odata-query
 
+## 8.0.6
+
+### Patch Changes
+
+- fix: Encode illegal chars in search ([`06cbc77`](https://github.com/techniq/odata-query/commit/06cbc77528b29c31008a19e5f3ce1c1f3cb38c1d))
+
 ## 8.0.5
 
 ### Patch Changes
