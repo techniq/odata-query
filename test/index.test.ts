@@ -1,6 +1,6 @@
 import { describe, expect, test as it } from 'vitest'
 
-import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT, decimal, TypedFilter } from '../src/index';
+import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT, decimal, TypedFilter,  escapeIllegalChars} from '../src/index';
 import { Square } from './test-interface'; 
 
 it('should return an empty string by default', () => {
@@ -92,7 +92,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        "?$filter=contains(SomeNames,'Bob') and SomeNames in ('Peter Newman','Bob Ross','Bobby Parker','Mike Bobson')";
+        "?$filter=contains(SomeNames,'Bob') and SomeNames in ('Peter%20Newman','Bob%20Ross','Bobby%20Parker','Mike%20Bobson')";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -663,7 +663,7 @@ describe('filter', () => {
         },
       };
       const expected =
-        "?$filter=Tasks/any(tasks:tasks/CreatedBy/Name eq 'Sean Lynch' and tasks/StatusId eq 300)";
+        "?$filter=Tasks/any(tasks:tasks/CreatedBy/Name eq 'Sean%20Lynch' and tasks/StatusId eq 300)";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -808,7 +808,7 @@ describe('filter', () => {
 
     it("should escape the `'` character in strings", () => {
       const filter = { StringProp: "O'Dimm" };
-      const expected = "?$filter=StringProp eq 'O''Dimm'";
+      const expected = "?$filter=StringProp eq 'O%27Dimm'";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
@@ -980,18 +980,32 @@ describe('filter', () => {
 describe('search', () => {
   it('should handle basic search string', () => {
     const search = 'blue OR green';
-    const expected = '?$search=blue OR green';
+    const expected = '?$search=blue%20OR%20green';
     const actual = buildQuery({ search });
     expect(actual).toEqual(expected);
   });
 
   it.each([
+    [':','%3A'],
     ['/','%2F'],
     ['?','%3F'],
     ['#','%23'],
+    ['[','%5B'],
+    [']','%5D'],
+    ['@','%40'],
+    ['!','%21'],
+    ['$','%24'],
     ['&','%26'],
+    ["'",'%27'],
+    ['(','%28'],
+    [')','%29'],
+    ['*','%2A'],
     ['+','%2B'],
-    ['%','%25']
+    [',','%2C'],
+    [';','%3B'],
+    ['=','%3D'],
+    ['%','%25'],
+    [' ','%20']
   ])('should encode the `%s` character as `%s` in strings', (char, encodedChar) => {
     const search = `X${char}Y`;
     const expected = `?$search=X${encodedChar}Y`;
@@ -1667,7 +1681,7 @@ describe('expand', () => {
 
   it('should allow expand with filter', () => {
     const expand = { Trips: { filter: { Name: 'Trip in US' } } };
-    const expected = "?$expand=Trips($filter=Name eq 'Trip in US')";
+    const expected = "?$expand=Trips($filter=Name eq 'Trip%20in%20US')";
     const actual = buildQuery({ expand });
     expect(actual).toEqual(expected);
   });

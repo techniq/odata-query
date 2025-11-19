@@ -360,13 +360,27 @@ function getStringCollectionClause(lambdaParameter: string, value: any, collecti
 }
 
 function escapeIllegalChars(string: string) {
-  string = string.replace(/%/g, '%25');
-  string = string.replace(/\+/g, '%2B');
-  string = string.replace(/\//g, '%2F');
-  string = string.replace(/\?/g, '%3F');
-  string = string.replace(/#/g, '%23');
-  string = string.replace(/&/g, '%26');
-  string = string.replace(/'/g, "''");
+  // Illegal characters based on https://developer.mozilla.org/en-US/docs/Glossary/Percent-encoding
+  string = string.replace(/%/g, '%25')
+    .replace(/:/g,'%3A')
+    .replace(/\//g, '%2F')
+    .replace(/\?/g, '%3F')
+    .replace(/#/g, '%23')
+    .replace(/\[/g,'%5B')
+    .replace(/]/g,'%5D')
+    .replace(/@/g,'%40')
+    .replace(/!/g,'%21')
+    .replace(/\$/g,'%24')
+    .replace(/&/g, '%26')
+    .replace(/'/g, "%27")
+    .replace(/\(/g,'%28')
+    .replace(/\)/g,'%29')
+    .replace(/\*/g,'%2A')
+    .replace(/\+/g, '%2B')
+    .replace(/,/g,'%2C')
+    .replace(/;/g,'%3B')
+    .replace(/=/g,'%3D')
+    .replace(/\x20/g,'%20');
   return string;
 }
 
