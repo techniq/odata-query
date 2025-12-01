@@ -303,7 +303,13 @@ function buildFilter<T>(filters: Filter<T> = {}, aliases: Alias[] = [], propPref
                   result.push(`${op}(${propName},${handleValue(value[op], aliases)})`);
                 } else {
                   // Nested property
-                  const filter = buildFilterCore({ [op]: value[op] }, aliases, propName);
+                  const isPropNameContainsNot = /\/not/g.test(propName)
+                  let internalPropName = isPropNameContainsNot ? propName.replace(/\/not/g, '') : propName
+
+                  const filter = isPropNameContainsNot
+                    ? parseNot([buildFilterCore({ [op]: value[op] }, aliases, internalPropName)])
+                    : buildFilterCore({ [op]: value[op] }, aliases, internalPropName)
+
                   if (filter) {
                     result.push(filter);
                   }

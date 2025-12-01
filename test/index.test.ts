@@ -164,6 +164,17 @@ describe('filter', () => {
   });
 
   describe('logical operators', () => {
+    it('should handle simple logical operators (not)', () => {
+      const filter = {
+        not: { FooProp: { startswith: 'foo' } }
+      };
+      const expected =
+        "?$filter=not (startswith(FooProp,'foo'))";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+    
+    
     it('should handle simple logical operators (not) as an object', () => {
       const filter = {
         and: [
@@ -173,7 +184,24 @@ describe('filter', () => {
         ],
       };
       const expected =
-        "?$filter=((not (startswith(FooProp,'foo'))) and (not (startswith(BarProp,'bar'))) and (startswith(FooBarProp,'foobar')))";
+      "?$filter=((not (startswith(FooProp,'foo'))) and (not (startswith(BarProp,'bar'))) and (startswith(FooBarProp,'foobar')))";
+      const actual = buildQuery({ filter });
+      expect(actual).toEqual(expected);
+    });
+    
+    it('should handle simple logical operators (not) inside nested prop', () => {
+      const filter = {
+        Prop: {
+          all: {
+            and: [
+              { not: { FooProp: { contains: "foo" } } },
+              { BarProp: { contains: "bar" }},
+            ],
+          },
+        },
+      };
+      const expected =
+        "?$filter=Prop/all(prop:((not (contains(prop/FooProp,'foo'))) and (contains(prop/BarProp,'bar'))))";
       const actual = buildQuery({ filter });
       expect(actual).toEqual(expected);
     });
