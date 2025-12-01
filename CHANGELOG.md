@@ -1,5 +1,11 @@
 # odata-query
 
+## 8.0.7
+
+### Patch Changes
+
+- - fix: resolve an issue with logical operator "not" inside nested property ([#98](https://github.com/techniq/odata-query/issues/98)) ([#150](https://github.com/techniq/odata-query/pull/150))
+
 ## 8.0.6
 
 ### Patch Changes
