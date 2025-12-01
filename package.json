@@ -1,7 +1,7 @@
 {
   "name": "odata-query",
   "description": "OData v4 query builder that uses a simple object-based syntax similar to MongoDB and js-data",
-  "version": "8.0.6",
+  "version": "8.0.7",
   "author": "Sean Lynch <techniq35@gmail.com>",
   "license": "MIT",
   "repository": "techniq/odata-query",
