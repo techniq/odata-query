@@ -1,5 +1,11 @@
 # odata-query
 
+## 8.0.8
+
+### Patch Changes
+
+- - refactor: improve the readability of the core functions ([#152](https://github.com/techniq/odata-query/pull/152))
+
 ## 8.0.7
 
 ### Patch Changes
