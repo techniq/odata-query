@@ -1,6 +1,6 @@
 import { describe, expect, test as it } from 'vitest'
 
-import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT, decimal, TypedFilter} from '../src/index';
+import buildQuery, {Expand, OrderBy, alias, json, ITEM_ROOT, decimal, TypedFilter, escapeODataStringLiteral, escapeIllegalChars} from '../src/index';
 import { Square } from './test-interface'; 
 
 it('should return an empty string by default', () => {
@@ -1878,6 +1878,80 @@ describe('format', () => {
     const format = 'json';
     const expected = '?$format=json';
     const actual = buildQuery({ format });
+    expect(actual).toEqual(expected);
+  });
+});
+
+describe('escapeODataStringLiteral', () => {
+  it('should return plain strings unchanged', () => {
+    const value = 'Hello';
+    const expected = 'Hello';
+    const actual = escapeODataStringLiteral(value);
+    expect(actual).toEqual(expected);
+  });
+
+  it('should return an empty string unchanged', () => {
+    const value = '';
+    const expected = '';
+    const actual = escapeODataStringLiteral(value);
+    expect(actual).toEqual(expected);
+  });
+
+  it('should double a single quote', () => {
+    const value = "O'Brien";
+    const expected = "O''Brien";
+    const actual = escapeODataStringLiteral(value);
+    expect(actual).toEqual(expected);
+  });
+
+  it('should double every quote when multiple are present', () => {
+    const value = "'a'b'";
+    const expected = "''a''b''";
+    const actual = escapeODataStringLiteral(value);
+    expect(actual).toEqual(expected);
+  });
+
+  it('should not URL-encode reserved characters', () => {
+    const value = 'a&b#c d';
+    const expected = 'a&b#c d';
+    const actual = escapeODataStringLiteral(value);
+    expect(actual).toEqual(expected);
+  });
+
+  it('should preserve unicode characters as-is', () => {
+    const value = 'café';
+    const expected = 'café';
+    const actual = escapeODataStringLiteral(value);
+    expect(actual).toEqual(expected);
+  });
+});
+
+describe('escapeIllegalChars', () => {
+  it('should not URL-encode single quotes', () => {
+    const value = "O'Brien";
+    const expected = "O''Brien";
+    const actual = escapeIllegalChars(value);
+    expect(actual).toEqual(expected);
+  });
+
+  it('should URL-encode reserved characters', () => {
+    const value = 'a&b#c d';
+    const expected = 'a%26b%23c%20d';
+    const actual = escapeIllegalChars(value);
+    expect(actual).toEqual(expected);
+  });
+
+  it('should double quotes and URL-encode reserved characters', () => {
+    const value = "O'Brien & co";
+    const expected = "O''Brien%20%26%20co";
+    const actual = escapeIllegalChars(value);
+    expect(actual).toEqual(expected);
+  });
+
+  it('should equal encodeURIComponent of escapeODataStringLiteral', () => {
+    const value = "O'Brien & co";
+    const expected = encodeURIComponent(escapeODataStringLiteral(value));
+    const actual = escapeIllegalChars(value);
     expect(actual).toEqual(expected);
   });
 });
