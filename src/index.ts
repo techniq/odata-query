@@ -306,9 +306,12 @@ function getStringCollectionClause(lambdaParameter: string, value: any, collecti
   return `${propName}/${collectionOperator}(${lambdaParameter}: ${lambdaParameter} ${conditionOperator} '${value}')`;
 }
 
-function escapeIllegalChars(string: string) {
-  string = string.replace(/'/g, "''");
-  return encodeURIComponent(string);
+export function escapeODataStringLiteral(string: string): string {
+  return string.replace(/'/g, "''");
+}
+
+export function escapeIllegalChars(string: string): string {
+  return encodeURIComponent(escapeODataStringLiteral(string));
 }
 
 function buildFilter<T>(filters: Filter<T> = {}, aliases: Alias[] = [], propPrefix = ''): string {
