@@ -1,5 +1,15 @@
 # odata-query
 
+## 8.1.0
+
+### Minor Changes
+
+- - feat: expose `escapeODataStringLiteral` and `escapeIllegalChars` as public exports ([#155](https://github.com/techniq/odata-query/pull/155))
+
+### Patch Changes
+
+- - refactor: improve the readability of the core functions ([#152](https://github.com/techniq/odata-query/pull/152))
+
 ## 8.0.7
 
 ### Patch Changes
